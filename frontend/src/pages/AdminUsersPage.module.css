@@ -1,0 +1,67 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.error {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background-color: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  color: #b91c1c;
+}
+
+.table {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+
+.tableHeader,
+.tableRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.5fr;
+  padding: 14px 18px;
+  align-items: center;
+  font-size: 14px;
+}
+
+.tableHeader {
+  background-color: #e2e8f0;
+  font-weight: 600;
+  color: #475569;
+}
+
+.tableRow:nth-child(odd) {
+  background-color: #f8fafc;
+}
+
+.tableRow:nth-child(even) {
+  background-color: #fff;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+}
+
+.actions button {
+  background: none;
+  border: none;
+  color: #2563eb;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.empty {
+  padding: 24px;
+  text-align: center;
+  color: #64748b;
+}

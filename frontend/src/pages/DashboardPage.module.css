@@ -1,0 +1,77 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.metricCard,
+.metricCardWarning {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.metricCardWarning {
+  border: 1px solid rgba(248, 113, 113, 0.4);
+}
+
+.metricValue {
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.table {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+
+.tableHeader,
+.tableRow {
+  display: grid;
+  grid-template-columns: 1.7fr 1fr 1fr 1fr;
+  padding: 14px 18px;
+  font-size: 14px;
+}
+
+.tableHeader {
+  background-color: #e2e8f0;
+  font-weight: 600;
+  color: #475569;
+}
+
+.tableRow:nth-child(odd) {
+  background-color: #f8fafc;
+}
+
+.tableRow:nth-child(even) {
+  background-color: #fff;
+}
+
+.carrier {
+  font-weight: 600;
+}
+
+.empty {
+  padding: 24px;
+  text-align: center;
+  color: #64748b;
+}

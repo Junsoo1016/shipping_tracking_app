@@ -1,0 +1,17 @@
+.root {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+  background-color: #f1f5f9;
+}
+
+.content {
+  padding: 32px;
+  background-color: #f8fafc;
+}
+
+@media (max-width: 880px) {
+  .root {
+    grid-template-columns: 1fr;
+  }
+}
