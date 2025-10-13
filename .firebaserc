@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "staging": "shipping-tracking-app-4fd6a",
+    "default": "shipping-tracking-app-4fd6a"
+  },
+  "targets": {},
+  "etags": {}
+}
