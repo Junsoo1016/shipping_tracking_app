@@ -14,8 +14,7 @@ const Navigation = () => {
   return (
     <aside className={styles.sidebar}>
       <div className={styles.brand}>
-        <span className={styles.brandLogo}>🚢</span>
-        <h1>ShipTrack</h1>
+        <span className={styles.brandLogo}>JJI</span>
       </div>
 
       <nav className={styles.nav}>
