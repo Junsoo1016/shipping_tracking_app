@@ -1,14 +1,4 @@
-import {
-  Timestamp,
-  addDoc,
-  collection,
-  doc,
-  onSnapshot,
-  orderBy,
-  query,
-  updateDoc,
-  where
-} from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, updateDoc, where } from 'firebase/firestore';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { db } from '../firebase/config';
 import { Shipment } from '../types/shipment';
@@ -19,9 +9,12 @@ type ShipmentsContextValue = {
   shipments: Shipment[];
   activeShipments: Shipment[];
   archivedShipments: Shipment[];
-  createShipment: (input: Omit<Shipment, 'id' | 'ownerUid' | 'archived' | 'lastUpdatedAt'>) => Promise<void>;
+  createShipment: (
+    input: Omit<Shipment, 'id' | 'ownerUid' | 'archived' | 'createdAt' | 'lastUpdatedAt'>
+  ) => Promise<void>;
   updateShipment: (id: string, data: Partial<Shipment>) => Promise<void>;
   toggleArchive: (id: string, archived: boolean) => Promise<void>;
+  deleteShipment: (id: string) => Promise<void>;
 };
 
 const ShipmentsContext = createContext<ShipmentsContextValue | undefined>(undefined);
@@ -64,6 +57,10 @@ export const ShipmentsProvider = ({ children }: { children: React.ReactNode }) =
             portOfLoading: payload.portOfLoading,
             portOfDischarge: payload.portOfDischarge,
             archived: payload.archived,
+            createdAt:
+              typeof payload.createdAt === 'string'
+                ? payload.createdAt
+                : payload.createdAt?.toDate?.().toISOString?.() ?? new Date().toISOString(),
             lastUpdatedAt: payload.lastUpdatedAt ?? new Date().toISOString()
           } as Shipment;
         });
@@ -93,9 +90,9 @@ export const ShipmentsProvider = ({ children }: { children: React.ReactNode }) =
         await addDoc(collection(db, collectionName), {
           ownerUid: user.uid,
           archived: false,
+          createdAt: new Date().toISOString(),
           lastUpdatedAt: new Date().toISOString(),
-          ...input,
-          createdAt: Timestamp.now()
+          ...input
         });
       },
       updateShipment: async (id, data) => {
@@ -109,6 +106,9 @@ export const ShipmentsProvider = ({ children }: { children: React.ReactNode }) =
           archived,
           lastUpdatedAt: new Date().toISOString()
         });
+      },
+      deleteShipment: async id => {
+        await deleteDoc(doc(db, collectionName, id));
       }
     }),
     [loading, shipments, user]

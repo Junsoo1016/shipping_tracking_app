@@ -19,5 +19,6 @@ export type Shipment = {
   portOfLoading?: string;
   portOfDischarge?: string;
   archived: boolean;
+  createdAt: string;
   lastUpdatedAt: string;
 };
