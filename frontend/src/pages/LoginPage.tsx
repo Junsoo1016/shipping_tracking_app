@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import styles from './LoginPage.module.css';
 
 const LoginPage = () => {
-  const { signIn, register } = useAuth();
+  const { signIn, register, resetPassword } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
@@ -12,6 +12,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -43,6 +44,27 @@ const LoginPage = () => {
       setError('Authentication failed. Please try again.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    setError(null);
+    setSuccess(null);
+
+    if (!email) {
+      setError('Enter your email above to receive a reset link.');
+      return;
+    }
+
+    try {
+      setResetting(true);
+      await resetPassword(email);
+      setSuccess('Password reset email sent. Check your inbox.');
+    } catch (err) {
+      console.error(err);
+      setError('Unable to send reset email. Please try again.');
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -121,6 +143,12 @@ const LoginPage = () => {
           </button>
         </form>
 
+        <div className={styles.helperRow}>
+          <button type="button" className={styles.linkButton} onClick={handleResetPassword} disabled={resetting}>
+            {resetting ? 'Sending reset link…' : 'Send password reset link'}
+          </button>
+        </div>
+
         <div className={styles.toggle}>
           {mode === 'signin' ? (
             <>
@@ -131,6 +159,7 @@ const LoginPage = () => {
                   setMode('signup');
                   setError(null);
                   setSuccess(null);
+                  setResetting(false);
                   setConfirmPassword('');
                 }}
               >
@@ -146,6 +175,7 @@ const LoginPage = () => {
                   setMode('signin');
                   setError(null);
                   setSuccess(null);
+                  setResetting(false);
                   setConfirmPassword('');
                 }}
               >
