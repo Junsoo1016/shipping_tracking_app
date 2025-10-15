@@ -10,22 +10,6 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-
-.brandLogo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background-color: rgba(59, 130, 246, 0.15);
-  color: #e2e8f0;
-  font-size: 18px;
-}
-
-.brandText {
   font-size: 22px;
   font-weight: 700;
   letter-spacing: 0.08em;
