@@ -46,6 +46,8 @@ const MonitorActivePage = () => {
   const [filterInputs, setFilterInputs] = useState<FilterState>(() => createFilterDefaults());
   const [filters, setFilters] = useState<FilterState>(() => createFilterDefaults());
   const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
+  const [portOfLoading, setPortOfLoading] = useState('');
+  const [portOfDischarge, setPortOfDischarge] = useState('');
 
   if (loading) {
     return <Spinner />;
@@ -70,6 +72,8 @@ const MonitorActivePage = () => {
     setCarrier('maersk');
     setTrackingNumber('');
     setStatus('created');
+    setPortOfLoading('');
+    setPortOfDischarge('');
     setEditingShipmentId(null);
     setError(null);
   };
@@ -89,7 +93,9 @@ const MonitorActivePage = () => {
         await updateShipment(editingShipmentId, {
           carrier,
           trackingNumber: trackingNumber.trim(),
-          status
+          status,
+          portOfLoading: portOfLoading.trim(),
+          portOfDischarge: portOfDischarge.trim()
         });
       } else {
         await createShipment({
@@ -98,8 +104,8 @@ const MonitorActivePage = () => {
           status,
           vesselName: '',
           eta: '',
-          portOfLoading: '',
-          portOfDischarge: ''
+          portOfLoading: portOfLoading.trim(),
+          portOfDischarge: portOfDischarge.trim()
         });
       }
 
@@ -122,6 +128,8 @@ const MonitorActivePage = () => {
     setCarrier(shipment.carrier);
     setTrackingNumber(shipment.trackingNumber);
     setStatus(shipment.status);
+    setPortOfLoading(shipment.portOfLoading ?? '');
+    setPortOfDischarge(shipment.portOfDischarge ?? '');
     setError(null);
     setIsModalOpen(true);
   };
@@ -336,24 +344,27 @@ const MonitorActivePage = () => {
       </section>
 
       <section>
-        <div className={styles.table}>
-          <div className={styles.tableHeader}>
-            <span>Tracking #</span>
-            <span>Carrier</span>
-            <span>Status</span>
-            <span>Created At</span>
-            <span>Last Updated</span>
-            <span>Actions</span>
-          </div>
-          {filteredShipments.length === 0 ? (
-            <div className={styles.empty}>No shipments match your filters.</div>
-          ) : (
-            filteredShipments.map(shipment => (
-              <div
-                key={shipment.id}
-                className={styles.tableRow}
-                role="button"
-                tabIndex={0}
+        <div className={styles.tableWrapper}>
+          <div className={styles.table}>
+            <div className={styles.tableHeader}>
+              <span>Tracking #</span>
+              <span>Carrier</span>
+              <span>Status</span>
+              <span>Origin</span>
+              <span>Destination</span>
+              <span>Created</span>
+              <span>Updated</span>
+              <span>Actions</span>
+            </div>
+            {filteredShipments.length === 0 ? (
+              <div className={styles.empty}>No shipments match your filters.</div>
+            ) : (
+              filteredShipments.map(shipment => (
+                <div
+                  key={shipment.id}
+                  className={styles.tableRow}
+                  role="button"
+                  tabIndex={0}
                 onClick={() => openDetails(shipment)}
                 onKeyDown={event => {
                   if (event.key === 'Enter' || event.key === ' ') {
@@ -365,6 +376,14 @@ const MonitorActivePage = () => {
                 <span>{shipment.trackingNumber}</span>
                 <span className={styles.carrier}>{shipment.carrier.toUpperCase()}</span>
                 <span>{shipment.status}</span>
+                <span className={styles.locationCell}>
+                  <span className={styles.locationIcon} aria-hidden="true">📍</span>
+                  {shipment.portOfLoading || '-'}
+                </span>
+                <span className={styles.locationCell}>
+                  <span className={styles.locationIcon} aria-hidden="true">🎯</span>
+                  {shipment.portOfDischarge || '-'}
+                </span>
                 <span>{formatDateTime(shipment.createdAt)}</span>
                 <span>{formatDateTime(shipment.lastUpdatedAt)}</span>
                 <span className={styles.actionsCell}>
@@ -398,9 +417,11 @@ const MonitorActivePage = () => {
                   </button>
                 </span>
               </div>
-            ))
-          )}
+              ))
+            )}
+          </div>
         </div>
+        <div className={styles.tableHint}>Drag horizontally to view all columns</div>
       </section>
 
       <Modal
@@ -441,6 +462,24 @@ const MonitorActivePage = () => {
             </select>
           </label>
 
+          <label>
+            Origin Port
+            <input
+              value={portOfLoading}
+              onChange={event => setPortOfLoading(event.target.value)}
+              placeholder="e.g. SAVANNAH"
+            />
+          </label>
+
+          <label>
+            Destination Port
+            <input
+              value={portOfDischarge}
+              onChange={event => setPortOfDischarge(event.target.value)}
+              placeholder="e.g. GWANGYANG"
+            />
+          </label>
+
           {error && <div className={styles.error}>{error}</div>}
 
           <div className={styles.modalActions}>
@@ -474,6 +513,14 @@ const MonitorActivePage = () => {
               <div>
                 <span className={styles.metaLabel}>Status</span>
                 <strong>{selectedShipment.status}</strong>
+              </div>
+              <div>
+                <span className={styles.metaLabel}>Origin</span>
+                <span>{selectedShipment.portOfLoading || '-'}</span>
+              </div>
+              <div>
+                <span className={styles.metaLabel}>Destination</span>
+                <span>{selectedShipment.portOfDischarge || '-'}</span>
               </div>
               <div>
                 <span className={styles.metaLabel}>Created</span>

@@ -236,34 +236,47 @@ const MonitorArchivePage = () => {
       </section>
 
       <section>
-        <div className={styles.table}>
-          <div className={styles.tableHeader}>
-            <span>Tracking #</span>
-            <span>Carrier</span>
-            <span>Status</span>
-            <span>Created At</span>
-            <span>Last Updated</span>
-            <span>Actions</span>
+        <div className={styles.tableWrapper}>
+          <div className={styles.table}>
+            <div className={styles.tableHeader}>
+              <span>Tracking #</span>
+              <span>Carrier</span>
+              <span>Status</span>
+              <span>Origin</span>
+              <span>Destination</span>
+              <span>Created</span>
+              <span>Updated</span>
+              <span>Actions</span>
+            </div>
+            {filteredShipments.length === 0 ? (
+              <div className={styles.empty}>No shipments match your filters.</div>
+            ) : (
+              filteredShipments.map(shipment => (
+                <div key={shipment.id} className={styles.tableRow}>
+                  <span>{shipment.trackingNumber}</span>
+                  <span className={styles.carrier}>{shipment.carrier.toUpperCase()}</span>
+                  <span>{shipment.status}</span>
+                  <span className={styles.locationCell}>
+                    <span className={styles.locationIcon} aria-hidden="true">📍</span>
+                    {shipment.portOfLoading || '-'}
+                  </span>
+                  <span className={styles.locationCell}>
+                    <span className={styles.locationIcon} aria-hidden="true">🎯</span>
+                    {shipment.portOfDischarge || '-'}
+                  </span>
+                  <span>{formatDateTime(shipment.createdAt)}</span>
+                  <span>{formatDateTime(shipment.lastUpdatedAt)}</span>
+                  <span className={styles.actionsCell}>
+                    <button type="button" onClick={() => toggleArchive(shipment.id, false)}>
+                      Restore
+                    </button>
+                  </span>
+                </div>
+              ))
+            )}
           </div>
-          {filteredShipments.length === 0 ? (
-            <div className={styles.empty}>No shipments match your filters.</div>
-          ) : (
-            filteredShipments.map(shipment => (
-              <div key={shipment.id} className={styles.tableRow}>
-                <span>{shipment.trackingNumber}</span>
-                <span className={styles.carrier}>{shipment.carrier.toUpperCase()}</span>
-                <span>{shipment.status}</span>
-                <span>{formatDateTime(shipment.createdAt)}</span>
-                <span>{formatDateTime(shipment.lastUpdatedAt)}</span>
-                <span className={styles.actionsCell}>
-                  <button type="button" onClick={() => toggleArchive(shipment.id, false)}>
-                    Restore
-                  </button>
-                </span>
-              </div>
-            ))
-          )}
         </div>
+        <div className={styles.tableHint}>Drag horizontally to view all columns</div>
       </section>
     </div>
   );

@@ -256,15 +256,44 @@
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
   overflow: hidden;
+  min-width: 1020px;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
+.tableWrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.tableWrapper::-webkit-scrollbar-thumb {
+  background: rgba(37, 99, 235, 0.35);
+  border-radius: 999px;
+}
+
+.tableWrapper::-webkit-scrollbar-track {
+  background: rgba(148, 163, 184, 0.15);
+  border-radius: 999px;
+}
+
+.tableHint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #64748b;
+  text-align: right;
 }
 
 .tableHeader,
 .tableRow {
   display: grid;
-  grid-template-columns: 1.6fr 1fr 1fr 1.2fr 1.2fr 1fr;
+  grid-template-columns: 1.6fr 1fr 0.9fr 1.2fr 1.2fr 1.3fr 1.3fr 1fr;
   padding: 14px 18px;
   font-size: 14px;
   align-items: center;
+  column-gap: 12px;
 }
 
 .tableHeader {
@@ -311,4 +340,13 @@
 
 .carrier {
   font-weight: 600;
+}
+.locationCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.locationIcon {
+  font-size: 14px;
 }
