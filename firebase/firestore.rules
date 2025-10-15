@@ -10,7 +10,7 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow create: if isSignedIn() && request.auth.uid == userId && request.resource.data.role == 'user';
+      allow create: if isSignedIn() && request.auth.uid == userId;
       allow read: if isSignedIn() && (request.auth.token.role == 'admin' || request.auth.uid == userId);
       allow update, delete: if isSignedIn() && request.auth.token.role == 'admin';
     }
