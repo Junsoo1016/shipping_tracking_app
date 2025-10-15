@@ -21,4 +21,13 @@ export type Shipment = {
   archived: boolean;
   createdAt: string;
   lastUpdatedAt: string;
+  events?: ShipmentEvent[];
+};
+
+export type ShipmentEvent = {
+  id: string;
+  status: string;
+  description?: string;
+  location?: string;
+  timestamp?: string;
 };

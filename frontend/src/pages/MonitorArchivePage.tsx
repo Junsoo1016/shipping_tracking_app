@@ -1,7 +1,7 @@
 import { ChangeEvent, useState } from 'react';
 import Spinner from '../components/Spinner';
 import { useShipments } from '../context/ShipmentsContext';
-import { CarrierCode } from '../types/shipment';
+import { CarrierCode, ShipmentStatus } from '../types/shipment';
 import styles from './MonitorPage.module.css';
 
 const carriers: { label: string; value: CarrierCode }[] = [
@@ -10,9 +10,19 @@ const carriers: { label: string; value: CarrierCode }[] = [
   { label: 'Other', value: 'other' }
 ];
 
+const statuses: { label: string; value: ShipmentStatus }[] = [
+  { label: 'Created', value: 'created' },
+  { label: 'In Transit', value: 'in_transit' },
+  { label: 'Arrived Port', value: 'arrived_port' },
+  { label: 'Out for Delivery', value: 'out_for_delivery' },
+  { label: 'Delivered', value: 'delivered' },
+  { label: 'Exception', value: 'exception' }
+];
+
 const createFilterDefaults = () => ({
   tracking: '',
   carrier: 'all' as 'all' | CarrierCode,
+  status: 'all' as 'all' | ShipmentStatus,
   createdStart: '',
   createdEnd: '',
   updatedStart: '',
@@ -89,9 +99,10 @@ const MonitorArchivePage = () => {
       .toLowerCase()
       .includes(filters.tracking.trim().toLowerCase());
     const matchesCarrier = filters.carrier === 'all' || shipment.carrier === filters.carrier;
+    const matchesStatus = filters.status === 'all' || shipment.status === filters.status;
     const matchesCreated = isWithinRange(shipment.createdAt, filters.createdStart, filters.createdEnd);
     const matchesUpdated = isWithinRange(shipment.lastUpdatedAt, filters.updatedStart, filters.updatedEnd);
-    return matchesTracking && matchesCarrier && matchesCreated && matchesUpdated;
+    return matchesTracking && matchesCarrier && matchesStatus && matchesCreated && matchesUpdated;
   });
 
   const handleExportCsv = () => {
@@ -147,6 +158,17 @@ const MonitorArchivePage = () => {
                 <select value={filterInputs.carrier} onChange={handleFilterInputChange('carrier')}>
                   <option value="all">All carriers</option>
                   {carriers.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className={styles.filterSelect}>
+                <span>Status</span>
+                <select value={filterInputs.status} onChange={handleFilterInputChange('status')}>
+                  <option value="all">All statuses</option>
+                  {statuses.map(option => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>

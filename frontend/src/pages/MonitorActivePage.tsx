@@ -1,8 +1,9 @@
 import { ChangeEvent, FormEvent, useState } from 'react';
 import Spinner from '../components/Spinner';
-import { useShipments } from '../context/ShipmentsContext';
-import { CarrierCode, ShipmentStatus } from '../types/shipment';
 import Modal from '../components/Modal';
+import Timeline from '../components/Timeline';
+import { useShipments } from '../context/ShipmentsContext';
+import { CarrierCode, Shipment, ShipmentStatus } from '../types/shipment';
 import styles from './MonitorPage.module.css';
 
 const carriers: { label: string; value: CarrierCode }[] = [
@@ -23,6 +24,7 @@ const statuses: { label: string; value: ShipmentStatus }[] = [
 const createFilterDefaults = () => ({
   tracking: '',
   carrier: 'all' as 'all' | CarrierCode,
+  status: 'all' as 'all' | ShipmentStatus,
   createdStart: '',
   createdEnd: '',
   updatedStart: '',
@@ -43,6 +45,7 @@ const MonitorActivePage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filterInputs, setFilterInputs] = useState<FilterState>(() => createFilterDefaults());
   const [filters, setFilters] = useState<FilterState>(() => createFilterDefaults());
+  const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
 
   if (loading) {
     return <Spinner />;
@@ -128,6 +131,14 @@ const MonitorActivePage = () => {
     setIsModalOpen(true);
   };
 
+  const openDetails = (shipment: Shipment) => {
+    setSelectedShipment(shipment);
+  };
+
+  const closeDetails = () => {
+    setSelectedShipment(null);
+  };
+
   const handleDelete = async (shipmentId: string) => {
     const confirmDelete = window.confirm('Delete this shipment? This action cannot be undone.');
     if (!confirmDelete) {
@@ -185,9 +196,10 @@ const MonitorActivePage = () => {
       .toLowerCase()
       .includes(filters.tracking.trim().toLowerCase());
     const matchesCarrier = filters.carrier === 'all' || shipment.carrier === filters.carrier;
+    const matchesStatus = filters.status === 'all' || shipment.status === filters.status;
     const matchesCreated = isWithinRange(shipment.createdAt, filters.createdStart, filters.createdEnd);
     const matchesUpdated = isWithinRange(shipment.lastUpdatedAt, filters.updatedStart, filters.updatedEnd);
-    return matchesTracking && matchesCarrier && matchesCreated && matchesUpdated;
+    return matchesTracking && matchesCarrier && matchesStatus && matchesCreated && matchesUpdated;
   });
 
   const handleExportCsv = () => {
@@ -243,6 +255,17 @@ const MonitorActivePage = () => {
                 <select value={filterInputs.carrier} onChange={handleFilterInputChange('carrier')}>
                   <option value="all">All carriers</option>
                   {carriers.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className={styles.filterSelect}>
+                <span>Status</span>
+                <select value={filterInputs.status} onChange={handleFilterInputChange('status')}>
+                  <option value="all">All statuses</option>
+                  {statuses.map(option => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
@@ -326,20 +349,51 @@ const MonitorActivePage = () => {
             <div className={styles.empty}>No shipments match your filters.</div>
           ) : (
             filteredShipments.map(shipment => (
-              <div key={shipment.id} className={styles.tableRow}>
+              <div
+                key={shipment.id}
+                className={styles.tableRow}
+                role="button"
+                tabIndex={0}
+                onClick={() => openDetails(shipment)}
+                onKeyDown={event => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    openDetails(shipment);
+                  }
+                }}
+              >
                 <span>{shipment.trackingNumber}</span>
                 <span className={styles.carrier}>{shipment.carrier.toUpperCase()}</span>
                 <span>{shipment.status}</span>
                 <span>{formatDateTime(shipment.createdAt)}</span>
                 <span>{formatDateTime(shipment.lastUpdatedAt)}</span>
                 <span className={styles.actionsCell}>
-                  <button type="button" onClick={() => handleEdit(shipment.id)}>
+                  <button
+                    type="button"
+                    onClick={event => {
+                      event.stopPropagation();
+                      handleEdit(shipment.id);
+                    }}
+                  >
                     Edit
                   </button>
-                  <button type="button" onClick={() => toggleArchive(shipment.id, true)}>
+                  <button
+                    type="button"
+                    onClick={event => {
+                      event.stopPropagation();
+                      toggleArchive(shipment.id, true);
+                    }}
+                  >
                     Archive
                   </button>
-                  <button type="button" className={styles.danger} onClick={() => handleDelete(shipment.id)}>
+                  <button
+                    type="button"
+                    className={styles.danger}
+                    onClick={event => {
+                      event.stopPropagation();
+                      handleDelete(shipment.id);
+                    }}
+                  >
                     Delete
                   </button>
                 </span>
@@ -403,6 +457,47 @@ const MonitorActivePage = () => {
             </button>
           </div>
         </form>
+      </Modal>
+
+      <Modal
+        open={!!selectedShipment}
+        onClose={closeDetails}
+        title={selectedShipment ? `Tracking ${selectedShipment.trackingNumber}` : undefined}
+      >
+        {selectedShipment && (
+          <div className={styles.detailBody}>
+            <div className={styles.detailMeta}>
+              <div>
+                <span className={styles.metaLabel}>Carrier</span>
+                <strong>{selectedShipment.carrier.toUpperCase()}</strong>
+              </div>
+              <div>
+                <span className={styles.metaLabel}>Status</span>
+                <strong>{selectedShipment.status}</strong>
+              </div>
+              <div>
+                <span className={styles.metaLabel}>Created</span>
+                <span>{formatDateTime(selectedShipment.createdAt)}</span>
+              </div>
+              <div>
+                <span className={styles.metaLabel}>Last Updated</span>
+                <span>{formatDateTime(selectedShipment.lastUpdatedAt)}</span>
+              </div>
+            </div>
+            <div>
+              <h4>Tracking Timeline</h4>
+              <Timeline
+                events={(selectedShipment.events ?? []).map(event => ({
+                  id: event.id,
+                  title: event.status,
+                  description: event.description,
+                  location: event.location,
+                  timestamp: event.timestamp
+                }))}
+              />
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );

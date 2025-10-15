@@ -208,6 +208,35 @@
   grid-column: 1 / -1;
 }
 
+.detailBody {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.detailMeta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  background-color: #f8fafc;
+  padding: 16px;
+  border-radius: 12px;
+}
+
+.metaLabel {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.detailBody h4 {
+  margin: 0 0 8px 0;
+  color: #1e293b;
+}
+
 .form button:disabled {
   opacity: 0.6;
   cursor: not-allowed;

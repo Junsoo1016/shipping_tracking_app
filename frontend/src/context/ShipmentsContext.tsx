@@ -1,4 +1,15 @@
-import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, updateDoc, where } from 'firebase/firestore';
+import {
+  Timestamp,
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+  updateDoc,
+  where
+} from 'firebase/firestore';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { db } from '../firebase/config';
 import { Shipment } from '../types/shipment';
@@ -10,7 +21,7 @@ type ShipmentsContextValue = {
   activeShipments: Shipment[];
   archivedShipments: Shipment[];
   createShipment: (
-    input: Omit<Shipment, 'id' | 'ownerUid' | 'archived' | 'createdAt' | 'lastUpdatedAt'>
+    input: Omit<Shipment, 'id' | 'ownerUid' | 'archived' | 'createdAt' | 'lastUpdatedAt' | 'events'>
   ) => Promise<void>;
   updateShipment: (id: string, data: Partial<Shipment>) => Promise<void>;
   toggleArchive: (id: string, archived: boolean) => Promise<void>;
@@ -61,7 +72,10 @@ export const ShipmentsProvider = ({ children }: { children: React.ReactNode }) =
               typeof payload.createdAt === 'string'
                 ? payload.createdAt
                 : payload.createdAt?.toDate?.().toISOString?.() ?? new Date().toISOString(),
-            lastUpdatedAt: payload.lastUpdatedAt ?? new Date().toISOString()
+            lastUpdatedAt: payload.lastUpdatedAt ?? new Date().toISOString(),
+            events: Array.isArray(payload.events)
+              ? payload.events
+              : payload.trackingEvents ?? []
           } as Shipment;
         });
         setShipments(data);
@@ -92,6 +106,7 @@ export const ShipmentsProvider = ({ children }: { children: React.ReactNode }) =
           archived: false,
           createdAt: new Date().toISOString(),
           lastUpdatedAt: new Date().toISOString(),
+          events: [],
           ...input
         });
       },
