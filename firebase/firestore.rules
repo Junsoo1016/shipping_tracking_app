@@ -10,8 +10,9 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
+      allow create: if isSignedIn() && request.auth.uid == userId && request.resource.data.role == 'user';
       allow read: if isSignedIn() && (request.auth.token.role == 'admin' || request.auth.uid == userId);
-      allow write: if isSignedIn() && request.auth.token.role == 'admin';
+      allow update, delete: if isSignedIn() && request.auth.token.role == 'admin';
     }
 
     match /shipments/{shipmentId} {
