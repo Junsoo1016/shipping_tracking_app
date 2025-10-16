@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 import Spinner from '../components/Spinner';
 import Modal from '../components/Modal';
 import Timeline from '../components/Timeline';
@@ -33,6 +33,29 @@ const createFilterDefaults = () => ({
 
 type FilterState = ReturnType<typeof createFilterDefaults>;
 
+const toInputDateTimeValue = (value?: string | null) => {
+  if (!value) {
+    return '';
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
+};
+
+const toIsoOrNull = (value: string): string | undefined => {
+  if (!value) {
+    return undefined;
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return undefined;
+  }
+  return date.toISOString();
+};
+
 const MonitorActivePage = () => {
   const { loading, activeShipments, createShipment, updateShipment, toggleArchive, deleteShipment } =
     useShipments();
@@ -48,6 +71,19 @@ const MonitorActivePage = () => {
   const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
   const [portOfLoading, setPortOfLoading] = useState('');
   const [portOfDischarge, setPortOfDischarge] = useState('');
+  const [departureDate, setDepartureDate] = useState('');
+  const [arrivalDate, setArrivalDate] = useState('');
+  const [openActionsId, setOpenActionsId] = useState<string | null>(null);
+  const [price, setPrice] = useState<string>('');
+  const [weight, setWeight] = useState<string>('');
+
+  useEffect(() => {
+    const handleClickAway = () => {
+      setOpenActionsId(null);
+    };
+    document.addEventListener('click', handleClickAway);
+    return () => document.removeEventListener('click', handleClickAway);
+  }, []);
 
   if (loading) {
     return <Spinner />;
@@ -74,6 +110,10 @@ const MonitorActivePage = () => {
     setStatus('created');
     setPortOfLoading('');
     setPortOfDischarge('');
+    setDepartureDate('');
+    setArrivalDate('');
+    setPrice('');
+    setWeight('');
     setEditingShipmentId(null);
     setError(null);
   };
@@ -95,7 +135,11 @@ const MonitorActivePage = () => {
           trackingNumber: trackingNumber.trim(),
           status,
           portOfLoading: portOfLoading.trim(),
-          portOfDischarge: portOfDischarge.trim()
+          portOfDischarge: portOfDischarge.trim(),
+          departureDate: toIsoOrNull(departureDate),
+          arrivalDate: toIsoOrNull(arrivalDate),
+          price: price ? Number(price) : null,
+          weight: weight ? Number(weight) : null
         });
       } else {
         await createShipment({
@@ -104,8 +148,12 @@ const MonitorActivePage = () => {
           status,
           vesselName: '',
           eta: '',
+          departureDate: toIsoOrNull(departureDate),
+          arrivalDate: toIsoOrNull(arrivalDate),
           portOfLoading: portOfLoading.trim(),
-          portOfDischarge: portOfDischarge.trim()
+          portOfDischarge: portOfDischarge.trim(),
+          price: price ? Number(price) : null,
+          weight: weight ? Number(weight) : null
         });
       }
 
@@ -130,6 +178,10 @@ const MonitorActivePage = () => {
     setStatus(shipment.status);
     setPortOfLoading(shipment.portOfLoading ?? '');
     setPortOfDischarge(shipment.portOfDischarge ?? '');
+    setDepartureDate(toInputDateTimeValue(shipment.departureDate));
+    setArrivalDate(toInputDateTimeValue(shipment.arrivalDate));
+    setPrice(shipment.price ? String(shipment.price) : '');
+    setWeight(shipment.weight ? String(shipment.weight) : '');
     setError(null);
     setIsModalOpen(true);
   };
@@ -154,6 +206,7 @@ const MonitorActivePage = () => {
     }
     try {
       await deleteShipment(shipmentId);
+      setOpenActionsId(null);
     } catch (err) {
       console.error(err);
       setError('Unable to delete shipment. Please try again.');
@@ -174,6 +227,17 @@ const MonitorActivePage = () => {
       return '-';
     }
     return date.toLocaleString();
+  };
+
+  const formatDateOnly = (value?: string) => {
+    if (!value) {
+      return '-';
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return '-';
+    }
+    return date.toLocaleDateString();
   };
 
   const isWithinRange = (value: string, start: string, end: string) => {
@@ -216,11 +280,29 @@ const MonitorActivePage = () => {
       return;
     }
 
-    const header = ['TrackingNumber', 'Carrier', 'Status', 'CreatedAt', 'LastUpdatedAt'];
+    const header = [
+      'TrackingNumber',
+      'Carrier',
+      'Status',
+      'Origin',
+      'Destination',
+      'Departure',
+      'Arrival',
+      'Price',
+      'Weight',
+      'CreatedAt',
+      'LastUpdatedAt'
+    ];
     const rows = filteredShipments.map(item => [
       item.trackingNumber,
       item.carrier.toUpperCase(),
       item.status,
+      item.portOfLoading ?? '',
+      item.portOfDischarge ?? '',
+      toIsoDate(item.departureDate ?? ''),
+      toIsoDate(item.arrivalDate ?? ''),
+      item.price ?? '',
+      item.weight ?? '',
       toIsoDate(item.createdAt),
       toIsoDate(item.lastUpdatedAt)
     ]);
@@ -352,9 +434,13 @@ const MonitorActivePage = () => {
               <span>Status</span>
               <span>Origin</span>
               <span>Destination</span>
-              <span>Created</span>
-              <span>Updated</span>
-              <span>Actions</span>
+              <span className={styles.nowrap}>Departure</span>
+              <span className={styles.nowrap}>Arrival</span>
+              <span className={styles.nowrap}>Price</span>
+              <span className={styles.nowrap}>Weight</span>
+              <span className={styles.nowrap}>Created</span>
+              <span className={styles.nowrap}>Updated</span>
+              <span className={styles.alignRight}>Actions</span>
             </div>
             {filteredShipments.length === 0 ? (
               <div className={styles.empty}>No shipments match your filters.</div>
@@ -365,17 +451,17 @@ const MonitorActivePage = () => {
                   className={styles.tableRow}
                   role="button"
                   tabIndex={0}
-                onClick={() => openDetails(shipment)}
-                onKeyDown={event => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    openDetails(shipment);
-                  }
-                }}
-              >
+                  onClick={() => openDetails(shipment)}
+                  onKeyDown={event => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      openDetails(shipment);
+                    }
+                  }}
+                >
                 <span>{shipment.trackingNumber}</span>
                 <span className={styles.carrier}>{shipment.carrier.toUpperCase()}</span>
-                <span>{shipment.status}</span>
+                <span className={styles.nowrap}>{shipment.status}</span>
                 <span className={styles.locationCell}>
                   <span className={styles.locationIcon} aria-hidden="true">📍</span>
                   {shipment.portOfLoading || '-'}
@@ -384,42 +470,63 @@ const MonitorActivePage = () => {
                   <span className={styles.locationIcon} aria-hidden="true">🎯</span>
                   {shipment.portOfDischarge || '-'}
                 </span>
-                <span>{formatDateTime(shipment.createdAt)}</span>
-                <span>{formatDateTime(shipment.lastUpdatedAt)}</span>
+                <span className={styles.nowrap}>{formatDateOnly(shipment.departureDate)}</span>
+                <span className={styles.nowrap}>{formatDateOnly(shipment.arrivalDate)}</span>
+                <span className={styles.nowrap}>
+                  {shipment.price != null
+                    ? `$${shipment.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                    : '-'}
+                </span>
+                <span className={styles.nowrap}>
+                  {shipment.weight != null ? `${shipment.weight.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg` : '-'}
+                </span>
+                <span className={styles.nowrap}>{formatDateOnly(shipment.createdAt)}</span>
+                <span className={styles.nowrap}>{formatDateTime(shipment.lastUpdatedAt)}</span>
                 <span className={styles.actionsCell}>
                   <button
                     type="button"
+                    className={styles.actionToggle}
                     onClick={event => {
                       event.stopPropagation();
-                      handleEdit(shipment.id);
+                      setOpenActionsId(prev => (prev === shipment.id ? null : shipment.id));
                     }}
                   >
-                    Edit
+                    ⋮
                   </button>
-                  <button
-                    type="button"
-                    onClick={event => {
-                      event.stopPropagation();
-                      toggleArchive(shipment.id, true);
-                    }}
-                  >
-                    Archive
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.danger}
-                    onClick={event => {
-                      event.stopPropagation();
-                      handleDelete(shipment.id);
-                    }}
-                  >
-                    Delete
-                  </button>
+                  {openActionsId === shipment.id && (
+                    <div className={styles.actionsMenu} onClick={event => event.stopPropagation()}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleEdit(shipment.id);
+                          setOpenActionsId(null);
+                        }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          toggleArchive(shipment.id, true);
+                          setOpenActionsId(null);
+                        }}
+                      >
+                        Archive
+                      </button>
+                      <button
+                        type="button"
+                        className={`${styles.danger} ${styles.menuDanger}`}
+                        onClick={() => handleDelete(shipment.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
                 </span>
               </div>
-              ))
-            )}
-          </div>
+            ))
+          )}
+        </div>
         </div>
         <div className={styles.tableHint}>Drag horizontally to view all columns</div>
       </section>
@@ -480,6 +587,48 @@ const MonitorActivePage = () => {
             />
           </label>
 
+          <label>
+            Departure Date
+            <input
+              type="datetime-local"
+              value={departureDate}
+              onChange={event => setDepartureDate(event.target.value)}
+            />
+          </label>
+
+          <label>
+            Arrival Date
+            <input
+              type="datetime-local"
+              value={arrivalDate}
+              onChange={event => setArrivalDate(event.target.value)}
+            />
+          </label>
+
+          <label>
+            Price (USD)
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={price}
+              onChange={event => setPrice(event.target.value)}
+              placeholder="e.g. 1250.00"
+            />
+          </label>
+
+          <label>
+            Weight (kg)
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={weight}
+              onChange={event => setWeight(event.target.value)}
+              placeholder="e.g. 2400"
+            />
+          </label>
+
           {error && <div className={styles.error}>{error}</div>}
 
           <div className={styles.modalActions}>
@@ -521,6 +670,30 @@ const MonitorActivePage = () => {
               <div>
                 <span className={styles.metaLabel}>Destination</span>
                 <span>{selectedShipment.portOfDischarge || '-'}</span>
+              </div>
+              <div>
+                <span className={styles.metaLabel}>Departure</span>
+                <span>{selectedShipment.departureDate ? formatDateTime(selectedShipment.departureDate) : '-'}</span>
+              </div>
+              <div>
+                <span className={styles.metaLabel}>Arrival</span>
+                <span>{selectedShipment.arrivalDate ? formatDateTime(selectedShipment.arrivalDate) : '-'}</span>
+              </div>
+              <div>
+                <span className={styles.metaLabel}>Price</span>
+                <span>
+                  {selectedShipment.price != null
+                    ? `$${selectedShipment.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                    : '-'}
+                </span>
+              </div>
+              <div>
+                <span className={styles.metaLabel}>Weight</span>
+                <span>
+                  {selectedShipment.weight != null
+                    ? `${selectedShipment.weight.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg`
+                    : '-'}
+                </span>
               </div>
               <div>
                 <span className={styles.metaLabel}>Created</span>

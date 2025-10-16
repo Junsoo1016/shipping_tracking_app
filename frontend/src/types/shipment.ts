@@ -16,12 +16,16 @@ export type Shipment = {
   status: ShipmentStatus;
   vesselName?: string;
   eta?: string;
+  departureDate?: string;
+  arrivalDate?: string;
   portOfLoading?: string;
   portOfDischarge?: string;
   archived: boolean;
   createdAt: string;
   lastUpdatedAt: string;
   events?: ShipmentEvent[];
+  price?: number | null;
+  weight?: number | null;
 };
 
 export type ShipmentEvent = {

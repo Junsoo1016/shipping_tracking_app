@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import Spinner from '../components/Spinner';
 import { useShipments } from '../context/ShipmentsContext';
 import { CarrierCode, ShipmentStatus } from '../types/shipment';
@@ -35,11 +35,17 @@ const MonitorArchivePage = () => {
   const { loading, archivedShipments, toggleArchive } = useShipments();
   const [filterInputs, setFilterInputs] = useState<FilterState>(() => createFilterDefaults());
   const [filters, setFilters] = useState<FilterState>(() => createFilterDefaults());
+  const [openActionsId, setOpenActionsId] = useState<string | null>(null);
 
   if (loading) {
     return <Spinner />;
   }
 
+  useEffect(() => {
+    const handleClickAway = () => setOpenActionsId(null);
+    document.addEventListener('click', handleClickAway);
+    return () => document.removeEventListener('click', handleClickAway);
+  }, []);
   const handleFilterInputChange = <Key extends keyof FilterState>(key: Key) =>
     (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       const value = event.target.value as FilterState[Key];
@@ -69,6 +75,17 @@ const MonitorArchivePage = () => {
       return '-';
     }
     return date.toLocaleString();
+  };
+
+  const formatDateOnly = (value?: string) => {
+    if (!value) {
+      return '-';
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return '-';
+    }
+    return date.toLocaleDateString();
   };
 
   const isWithinRange = (value: string, start: string, end: string) => {
@@ -111,11 +128,29 @@ const MonitorArchivePage = () => {
       return;
     }
 
-    const header = ['TrackingNumber', 'Carrier', 'Status', 'CreatedAt', 'LastUpdatedAt'];
+    const header = [
+      'TrackingNumber',
+      'Carrier',
+      'Status',
+      'Origin',
+      'Destination',
+      'Departure',
+      'Arrival',
+      'Price',
+      'Weight',
+      'CreatedAt',
+      'LastUpdatedAt'
+    ];
     const rows = filteredShipments.map(item => [
       item.trackingNumber,
       item.carrier.toUpperCase(),
       item.status,
+      item.portOfLoading ?? '',
+      item.portOfDischarge ?? '',
+      toIsoDate(item.departureDate ?? ''),
+      toIsoDate(item.arrivalDate ?? ''),
+      item.price ?? '',
+      item.weight ?? '',
       toIsoDate(item.createdAt),
       toIsoDate(item.lastUpdatedAt)
     ]);
@@ -244,9 +279,13 @@ const MonitorArchivePage = () => {
               <span>Status</span>
               <span>Origin</span>
               <span>Destination</span>
-              <span>Created</span>
-              <span>Updated</span>
-              <span>Actions</span>
+              <span className={styles.nowrap}>Departure</span>
+              <span className={styles.nowrap}>Arrival</span>
+              <span className={styles.nowrap}>Price</span>
+              <span className={styles.nowrap}>Weight</span>
+              <span className={styles.nowrap}>Created</span>
+              <span className={styles.nowrap}>Updated</span>
+              <span className={styles.alignRight}>Actions</span>
             </div>
             {filteredShipments.length === 0 ? (
               <div className={styles.empty}>No shipments match your filters.</div>
@@ -255,7 +294,7 @@ const MonitorArchivePage = () => {
                 <div key={shipment.id} className={styles.tableRow}>
                   <span>{shipment.trackingNumber}</span>
                   <span className={styles.carrier}>{shipment.carrier.toUpperCase()}</span>
-                  <span>{shipment.status}</span>
+                  <span className={styles.nowrap}>{shipment.status}</span>
                   <span className={styles.locationCell}>
                     <span className={styles.locationIcon} aria-hidden="true">📍</span>
                     {shipment.portOfLoading || '-'}
@@ -264,12 +303,44 @@ const MonitorArchivePage = () => {
                     <span className={styles.locationIcon} aria-hidden="true">🎯</span>
                     {shipment.portOfDischarge || '-'}
                   </span>
-                  <span>{formatDateTime(shipment.createdAt)}</span>
-                  <span>{formatDateTime(shipment.lastUpdatedAt)}</span>
+                  <span className={styles.nowrap}>{formatDateOnly(shipment.departureDate)}</span>
+                  <span className={styles.nowrap}>{formatDateOnly(shipment.arrivalDate)}</span>
+                  <span className={styles.nowrap}>
+                    {shipment.price != null
+                      ? `$${shipment.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                      : '-'}
+                  </span>
+                  <span className={styles.nowrap}>
+                    {shipment.weight != null
+                      ? `${shipment.weight.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg`
+                      : '-'}
+                  </span>
+                  <span className={styles.nowrap}>{formatDateOnly(shipment.createdAt)}</span>
+                  <span className={styles.nowrap}>{formatDateTime(shipment.lastUpdatedAt)}</span>
                   <span className={styles.actionsCell}>
-                    <button type="button" onClick={() => toggleArchive(shipment.id, false)}>
-                      Restore
+                    <button
+                      type="button"
+                      className={styles.actionToggle}
+                      onClick={event => {
+                        event.stopPropagation();
+                        setOpenActionsId(prev => (prev === shipment.id ? null : shipment.id));
+                      }}
+                    >
+                      ⋮
                     </button>
+                    {openActionsId === shipment.id && (
+                      <div className={styles.actionsMenu} onClick={event => event.stopPropagation()}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            toggleArchive(shipment.id, false);
+                            setOpenActionsId(null);
+                          }}
+                        >
+                          Restore
+                        </button>
+                      </div>
+                    )}
                   </span>
                 </div>
               ))

@@ -65,8 +65,18 @@ export const ShipmentsProvider = ({ children }: { children: React.ReactNode }) =
             status: payload.status,
             vesselName: payload.vesselName,
             eta: payload.eta,
+            departureDate:
+              (typeof payload.departureDate === 'string'
+                ? payload.departureDate
+                : payload.departureDate?.toDate?.().toISOString?.()) ?? undefined,
+            arrivalDate:
+              (typeof payload.arrivalDate === 'string'
+                ? payload.arrivalDate
+                : payload.arrivalDate?.toDate?.().toISOString?.()) ?? undefined,
             portOfLoading: payload.portOfLoading,
             portOfDischarge: payload.portOfDischarge,
+            price: payload.price ?? null,
+            weight: payload.weight ?? null,
             archived: payload.archived,
             createdAt:
               typeof payload.createdAt === 'string'

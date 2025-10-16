@@ -255,14 +255,15 @@
   background: white;
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
-  overflow: hidden;
-  min-width: 1020px;
+  overflow: visible;
+  min-width: 1400px;
 }
 
 .tableWrapper {
   overflow-x: auto;
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+  padding-bottom: 0;
 }
 
 .tableWrapper::-webkit-scrollbar {
@@ -289,11 +290,13 @@
 .tableHeader,
 .tableRow {
   display: grid;
-  grid-template-columns: 1.6fr 1fr 0.9fr 1.2fr 1.2fr 1.3fr 1.3fr 1fr;
-  padding: 14px 18px;
+  grid-template-columns: 1.6fr 1.2fr 1.1fr 1.2fr 1.2fr 1.25fr 1.25fr 1.1fr 1.1fr 1.1fr 1.2fr 1fr;
+  padding: 16px 24px;
   font-size: 14px;
   align-items: center;
-  column-gap: 12px;
+  column-gap: 24px;
+  justify-items: stretch;
+  text-align: center;
 }
 
 .tableHeader {
@@ -318,10 +321,93 @@
   font-weight: 600;
 }
 
-.actionsCell {
-  display: flex;
-  gap: 12px;
+.tableRow span,
+.tableHeader span {
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
+  width: 100%;
+  text-align: center;
+  padding: 6px 0;
+}
+
+.actionsCell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.alignRight {
+  justify-self: center;
+  text-align: center;
+}
+
+.nowrap {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.actionToggle {
+  border: none;
+  background: #e2e8f0;
+  color: #1e293b;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.actionToggle:hover {
+  background: rgba(37, 99, 235, 0.15);
+  color: #2563eb;
+}
+
+.actionsMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+  min-width: 140px;
+  padding: 6px 0;
+  z-index: 10;
+}
+
+.actionsMenu button {
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1e293b;
+  cursor: pointer;
+}
+
+.actionsMenu button:hover {
+  background: rgba(37, 99, 235, 0.12);
+  color: #2563eb;
+}
+
+.actionsMenu button.danger {
+  color: #b91c1c;
+}
+
+.actionsMenu button.danger:hover {
+  background: rgba(248, 113, 113, 0.12);
+}
+
+.menuDanger {
+  font-weight: 600;
 }
 
 .danger {
@@ -340,10 +426,14 @@
 
 .carrier {
   font-weight: 600;
+  display: inline-block;
+  width: 100%;
 }
+
 .locationCell {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
 }
 
