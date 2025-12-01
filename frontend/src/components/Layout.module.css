@@ -1,17 +1,31 @@
 .root {
   display: grid;
-  grid-template-columns: 240px 1fr;
-  min-height: 100vh;
+  grid-template-columns: 260px minmax(0, 1fr);
+  height: 100vh;
   background-color: #f1f5f9;
+  transition: grid-template-columns 0.3s ease;
+  overflow: hidden;
+}
+
+.collapsed {
+  grid-template-columns: 72px minmax(0, 1fr);
 }
 
 .content {
   padding: 32px;
   background-color: #f8fafc;
+  min-width: 0;
+  height: 100vh;
+  overflow-y: auto;
 }
 
 @media (max-width: 880px) {
   .root {
-    grid-template-columns: 1fr;
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+
+  .content {
+    height: auto;
+    min-height: 100vh;
   }
 }

@@ -4,74 +4,229 @@
   gap: 32px;
 }
 
-.metrics {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+.dashboardHeader {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
   gap: 16px;
 }
 
-.metricCard,
-.metricCardWarning {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.dashboardHeader h2 {
+  margin: 0;
+  font-size: 28px;
 }
 
-.metricCardWarning {
-  border: 1px solid rgba(248, 113, 113, 0.4);
+.dashboardHeader p {
+  margin: 4px 0 0 0;
+  color: #64748b;
+}
+
+.yearFilter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.yearFilter select {
+  min-width: 120px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.metrics {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.metricCard {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.metricCard h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #475569;
 }
 
 .metricValue {
-  font-size: 32px;
+  font-size: 24px;
   font-weight: 700;
+  color: #1e293b;
+}
+
+.topList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.topList li {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 15px;
+}
+
+.topList li span {
+  color: #2563eb;
+}
+
+.charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.chartCard {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .sectionHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  gap: 12px;
 }
 
-.table {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
-  overflow: hidden;
+.sectionHeader h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #0f172a;
 }
 
-.tableHeader,
-.tableRow {
+.tablesSection {
   display: grid;
-  grid-template-columns: 1.7fr 1fr 1fr 1fr;
-  padding: 14px 18px;
-  font-size: 14px;
+  gap: 24px;
 }
 
-.tableHeader {
-  background-color: #e2e8f0;
+.tableCard {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.scrollableTable {
+  overflow-x: auto;
+}
+
+.scrollableTable table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 920px;
+}
+
+.scrollableTable th,
+.scrollableTable td {
+  padding: 10px 14px;
+  text-align: right;
+  font-size: 14px;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.scrollableTable th:first-child,
+.scrollableTable td:first-child {
+  text-align: left;
   font-weight: 600;
+  color: #1f2937;
+}
+
+.scrollableTable thead th {
+  background: #f1f5f9;
   color: #475569;
 }
 
-.tableRow:nth-child(odd) {
-  background-color: #f8fafc;
+.summaryRow td {
+  font-weight: 700;
+  background: #e2e8f0;
 }
 
-.tableRow:nth-child(even) {
-  background-color: #fff;
+.paginationWrapper {
+  display: flex;
+  width: 100%;
 }
 
-.carrier {
+.paginationBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+  padding: 16px 20px;
+  width: 100%;
+}
+
+.pageSizeControl {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.pageSizeControl select {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  font-size: 14px;
+}
+
+.pageStatus {
+  font-size: 14px;
+  color: #475569;
+}
+
+.pageControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pageIndicator {
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.tableCard span {
+  color: #475569;
   font-weight: 600;
 }
 
-.empty {
-  padding: 24px;
-  text-align: center;
-  color: #64748b;
+@media (max-width: 768px) {
+  .metricValue {
+    font-size: 28px;
+  }
+
+  .scrollableTable table {
+    min-width: 760px;
+  }
 }

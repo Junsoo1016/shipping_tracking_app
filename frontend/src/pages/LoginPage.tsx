@@ -71,7 +71,7 @@ const LoginPage = () => {
   return (
     <div className={styles.wrapper}>
       <div className={styles.card}>
-        <h1>ShipTrack</h1>
+        <h1>JJ International</h1>
         <p className={styles.subtitle}>Log in to manage your ocean freight tracking.</p>
 
         <form onSubmit={handleSubmit} className={styles.form}>

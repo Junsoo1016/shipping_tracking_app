@@ -3,14 +3,50 @@
   flex-direction: column;
   background-color: #0f172a;
   color: white;
-  padding: 32px 24px;
-  gap: 32px;
+  padding: 28px 20px;
+  gap: 28px;
+  height: 100vh;
+  box-shadow: 4px 0 20px rgba(15, 23, 42, 0.25);
+  transition: padding 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+}
+
+.collapsed {
+  padding: 28px 12px;
+}
+
+.brandRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toggleButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.toggleButton:hover {
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .brand {
-  display: flex;
-  align-items: center;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -19,56 +55,93 @@
 .nav {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
-.nav a {
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: 10px;
   font-weight: 500;
   color: #cbd5f5;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.nav a:hover {
-  background-color: rgba(148, 163, 184, 0.15);
+.navLink:hover {
+  background-color: rgba(148, 163, 184, 0.18);
+}
+
+.navIcon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.linkLabel {
+  white-space: nowrap;
 }
 
 .active {
-  background-color: rgba(59, 130, 246, 0.15);
-  color: #e2e8f0;
+  background-color: rgba(59, 130, 246, 0.22);
+  color: #f8fafc;
 }
 
 .sectionLabel {
   margin-top: 16px;
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.14em;
   color: #64748b;
+}
+
+.collapsed .navLink {
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.collapsed .sectionLabel {
+  display: none;
 }
 
 .footer {
   margin-top: auto;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+}
+
+.collapsed .footer {
+  gap: 16px;
 }
 
 .userEmail {
-  font-size: 14px;
+  font-size: 13px;
   color: #94a3b8;
+  word-break: break-all;
 }
 
 .signOut {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   background-color: transparent;
   color: #e2e8f0;
   border: 1px solid rgba(148, 163, 184, 0.6);
-  border-radius: 6px;
+  border-radius: 10px;
   padding: 8px 12px;
   cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .signOut:hover {
-  background-color: rgba(148, 163, 184, 0.2);
+  background-color: rgba(148, 163, 184, 0.25);
+}
+
+.collapsed .signOut span,
+.collapsed .brand {
+  display: none;
 }
 
 @media (max-width: 880px) {
@@ -77,7 +150,8 @@
     align-items: center;
     gap: 16px;
     padding: 16px;
-    overflow-x: auto;
+    height: auto;
+    position: static;
   }
 
   .nav {

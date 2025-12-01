@@ -24,5 +24,10 @@ service cloud.firestore {
         allow write: if false;
       }
     }
+
+    match /financeOffers/{offerId} {
+      allow create: if isSignedIn() && request.resource.data.ownerUid == request.auth.uid;
+      allow read, update, delete: if isSignedIn() && isOwnerOrAdmin(resource.data.ownerUid);
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
+import { ChangeEvent, FormEvent, useState } from 'react';
 import Spinner from '../components/Spinner';
 import Modal from '../components/Modal';
 import Timeline from '../components/Timeline';
@@ -73,17 +73,8 @@ const MonitorActivePage = () => {
   const [portOfDischarge, setPortOfDischarge] = useState('');
   const [departureDate, setDepartureDate] = useState('');
   const [arrivalDate, setArrivalDate] = useState('');
-  const [openActionsId, setOpenActionsId] = useState<string | null>(null);
   const [price, setPrice] = useState<string>('');
   const [weight, setWeight] = useState<string>('');
-
-  useEffect(() => {
-    const handleClickAway = () => {
-      setOpenActionsId(null);
-    };
-    document.addEventListener('click', handleClickAway);
-    return () => document.removeEventListener('click', handleClickAway);
-  }, []);
 
   if (loading) {
     return <Spinner />;
@@ -206,7 +197,6 @@ const MonitorActivePage = () => {
     }
     try {
       await deleteShipment(shipmentId);
-      setOpenActionsId(null);
     } catch (err) {
       console.error(err);
       setError('Unable to delete shipment. Please try again.');
@@ -427,106 +417,126 @@ const MonitorActivePage = () => {
 
       <section>
         <div className={styles.tableWrapper}>
-          <div className={styles.table}>
-            <div className={styles.tableHeader}>
-              <span>Tracking #</span>
-              <span>Carrier</span>
-              <span>Status</span>
-              <span>Origin</span>
-              <span>Destination</span>
-              <span className={styles.nowrap}>Departure</span>
-              <span className={styles.nowrap}>Arrival</span>
-              <span className={styles.nowrap}>Price</span>
-              <span className={styles.nowrap}>Weight</span>
-              <span className={styles.nowrap}>Created</span>
-              <span className={styles.nowrap}>Updated</span>
-              <span className={styles.alignRight}>Actions</span>
-            </div>
-            {filteredShipments.length === 0 ? (
-              <div className={styles.empty}>No shipments match your filters.</div>
-            ) : (
-              filteredShipments.map(shipment => (
-                <div
-                  key={shipment.id}
-                  className={styles.tableRow}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => openDetails(shipment)}
-                  onKeyDown={event => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault();
-                      openDetails(shipment);
-                    }
-                  }}
-                >
-                <span>{shipment.trackingNumber}</span>
-                <span className={styles.carrier}>{shipment.carrier.toUpperCase()}</span>
-                <span className={styles.nowrap}>{shipment.status}</span>
-                <span className={styles.locationCell}>
-                  <span className={styles.locationIcon} aria-hidden="true">📍</span>
-                  {shipment.portOfLoading || '-'}
-                </span>
-                <span className={styles.locationCell}>
-                  <span className={styles.locationIcon} aria-hidden="true">🎯</span>
-                  {shipment.portOfDischarge || '-'}
-                </span>
-                <span className={styles.nowrap}>{formatDateOnly(shipment.departureDate)}</span>
-                <span className={styles.nowrap}>{formatDateOnly(shipment.arrivalDate)}</span>
-                <span className={styles.nowrap}>
-                  {shipment.price != null
-                    ? `$${shipment.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                    : '-'}
-                </span>
-                <span className={styles.nowrap}>
-                  {shipment.weight != null ? `${shipment.weight.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg` : '-'}
-                </span>
-                <span className={styles.nowrap}>{formatDateOnly(shipment.createdAt)}</span>
-                <span className={styles.nowrap}>{formatDateTime(shipment.lastUpdatedAt)}</span>
-                <span className={styles.actionsCell}>
-                  <button
-                    type="button"
-                    className={styles.actionToggle}
-                    onClick={event => {
-                      event.stopPropagation();
-                      setOpenActionsId(prev => (prev === shipment.id ? null : shipment.id));
+          <table className={styles.tableElement}>
+            <colgroup>
+              <col className={styles.colTracking} />
+              <col className={styles.colCarrier} />
+              <col className={styles.colStatus} />
+              <col className={styles.colLocation} />
+              <col className={styles.colLocation} />
+              <col className={styles.colDate} />
+              <col className={styles.colDate} />
+              <col className={styles.colNumeric} />
+              <col className={styles.colNumeric} />
+              <col className={styles.colDateLong} />
+              <col className={styles.colDateLong} />
+              <col className={styles.colActions} />
+            </colgroup>
+            <thead>
+              <tr>
+                <th scope="col">Tracking #</th>
+                <th scope="col">Carrier</th>
+                <th scope="col">Status</th>
+                <th scope="col">Origin</th>
+                <th scope="col">Destination</th>
+                <th scope="col">Departure</th>
+                <th scope="col">Arrival</th>
+                <th scope="col">Price</th>
+                <th scope="col">Weight</th>
+                <th scope="col">Created</th>
+                <th scope="col">Updated</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredShipments.length === 0 ? (
+                <tr>
+                  <td className={styles.emptyRow} colSpan={12}>
+                    No shipments match your filters.
+                  </td>
+                </tr>
+              ) : (
+                filteredShipments.map(shipment => (
+                  <tr
+                    key={shipment.id}
+                    className={styles.tableBodyRowClickable}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => openDetails(shipment)}
+                    onKeyDown={event => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        openDetails(shipment);
+                      }
                     }}
                   >
-                    ⋮
-                  </button>
-                  {openActionsId === shipment.id && (
-                    <div className={styles.actionsMenu} onClick={event => event.stopPropagation()}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          handleEdit(shipment.id);
-                          setOpenActionsId(null);
-                        }}
-                      >
+                    <td>
+                      <span className={styles.cellContent}>{shipment.trackingNumber}</span>
+                    </td>
+                    <td>
+                      <span className={`${styles.cellContent} ${styles.carrier}`}>{shipment.carrier.toUpperCase()}</span>
+                    </td>
+                    <td>
+                      <span className={styles.cellContent}>{shipment.status}</span>
+                    </td>
+                    <td>
+                      <span className={styles.cellContent}>
+                        <span className={styles.locationIcon} aria-hidden="true">
+                          📍
+                        </span>
+                        {shipment.portOfLoading || '-'}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={styles.cellContent}>
+                        <span className={styles.locationIcon} aria-hidden="true">
+                          🎯
+                        </span>
+                        {shipment.portOfDischarge || '-'}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={styles.cellContent}>{formatDateOnly(shipment.departureDate)}</span>
+                    </td>
+                    <td>
+                      <span className={styles.cellContent}>{formatDateOnly(shipment.arrivalDate)}</span>
+                    </td>
+                    <td>
+                      <span className={`${styles.cellContent} ${styles.priceCell}`}>
+                        {shipment.price != null
+                          ? `$${shipment.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                          : '-'}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`${styles.cellContent} ${styles.weightCell}`}>
+                        {shipment.weight != null
+                          ? `${shipment.weight.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg`
+                          : '-'}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={styles.cellContent}>{formatDateOnly(shipment.createdAt)}</span>
+                    </td>
+                    <td>
+                      <span className={styles.cellContent}>{formatDateTime(shipment.lastUpdatedAt)}</span>
+                    </td>
+                    <td className={styles.actionsCell} onClick={event => event.stopPropagation()}>
+                      <button type="button" onClick={() => handleEdit(shipment.id)}>
                         Edit
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          toggleArchive(shipment.id, true);
-                          setOpenActionsId(null);
-                        }}
-                      >
+                      <button type="button" onClick={() => toggleArchive(shipment.id, true)}>
                         Archive
                       </button>
-                      <button
-                        type="button"
-                        className={`${styles.danger} ${styles.menuDanger}`}
-                        onClick={() => handleDelete(shipment.id)}
-                      >
+                      <button type="button" className={styles.danger} onClick={() => handleDelete(shipment.id)}>
                         Delete
                       </button>
-                    </div>
-                  )}
-                </span>
-              </div>
-            ))
-          )}
-        </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
         <div className={styles.tableHint}>Drag horizontally to view all columns</div>
       </section>

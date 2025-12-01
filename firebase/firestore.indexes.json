@@ -8,6 +8,14 @@
         { "fieldPath": "archived", "order": "ASCENDING" },
         { "fieldPath": "lastUpdatedAt", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "financeOffers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ownerUid", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
