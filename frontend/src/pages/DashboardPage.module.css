@@ -129,10 +129,12 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow: hidden;
 }
 
 .scrollableTable {
   overflow-x: auto;
+  padding-bottom: 8px;
 }
 
 .scrollableTable table {
