@@ -7,9 +7,8 @@ import { useFinanceOffers } from '../context/FinanceOffersContext';
 import { FinanceOffer } from '../types/financeOffer';
 import styles from './FinanceOfferListPage.module.css';
 
-type OfferDraft = Omit<FinanceOffer, 'id' | 'ownerUid' | 'createdAt' | 'updatedAt'> & {
+type OfferDraft = Omit<FinanceOffer, 'id' | 'ownerUid' | 'createdAt' | 'updatedAt' | 'note'> & {
   offerMetricTons: string;
-  note: string;
 };
 
 type FeedbackState = {
@@ -36,7 +35,6 @@ const createEmptyOffer = (): OfferDraft => ({
   amount: '',
   settlementDate: '',
   paymentCondition: '',
-  note: '',
   commission: '',
   totalCommission: '',
   depositDate: ''
@@ -299,7 +297,6 @@ const FinanceOfferListPage = () => {
       amount: formState.amount.trim(),
       settlementDate: formState.settlementDate.trim(),
       paymentCondition: formState.paymentCondition.trim(),
-      note: formState.note.trim(),
       commission: formState.commission.trim(),
       totalCommission: formState.totalCommission.trim(),
       depositDate: formState.depositDate.trim()
@@ -310,14 +307,14 @@ const FinanceOfferListPage = () => {
         await updateOffer(editingOfferId, {
           ...trimmed,
           offerMetricTons: trimmed.offerMetricTons || undefined,
-          note: trimmed.note || undefined
+          note: undefined
         });
         setFeedback({ type: 'success', message: 'Offer updated successfully.' });
       } else {
         await createOffer({
           ...trimmed,
           offerMetricTons: trimmed.offerMetricTons || undefined,
-          note: trimmed.note || undefined
+          note: undefined
         });
         setFeedback({ type: 'success', message: 'Offer added successfully.' });
       }
@@ -358,7 +355,6 @@ const FinanceOfferListPage = () => {
       amount: offer.amount,
       settlementDate: offer.settlementDate,
       paymentCondition: offer.paymentCondition,
-      note: offer.note ?? '',
       commission: offer.commission,
       totalCommission: offer.totalCommission,
       depositDate: offer.depositDate
@@ -458,10 +454,9 @@ const FinanceOfferListPage = () => {
           amount: toCleanString(row[14]),
           settlementDate: toCleanString(row[15]),
           paymentCondition: toCleanString(row[16]),
-          note: toCleanString(row[17]),
-          commission: toCleanString(row[18]),
-          totalCommission: toCleanString(row[19]),
-          depositDate: toCleanString(row[20])
+          commission: toCleanString(row[17]),
+          totalCommission: toCleanString(row[18]),
+          depositDate: toCleanString(row[19])
         });
 
         return acc;
@@ -477,8 +472,7 @@ const FinanceOfferListPage = () => {
       await importOffers(
         parsedOffers.map(item => ({
           ...item,
-          offerMetricTons: item.offerMetricTons || undefined,
-          note: item.note || undefined
+          offerMetricTons: item.offerMetricTons || undefined
         }))
       );
       setFeedback({
@@ -830,7 +824,6 @@ const FinanceOfferListPage = () => {
                 <th>Amount</th>
                 <th>Settlement Date</th>
                 <th>Payment Condition</th>
-                <th>비 고</th>
                 <th>커미션</th>
                 <th>총커미션</th>
                 <th>입금일</th>
@@ -875,10 +868,9 @@ const FinanceOfferListPage = () => {
                     <td>{record.amount}</td>
                     <td>{record.settlementDate || '-'}</td>
                     <td className={styles.paymentCell}>{record.paymentCondition || '-'}</td>
-                    <td className={styles.noteCell}>{record.note && record.note.length > 0 ? record.note : '-'}</td>
-                    <td>{record.commission}</td>
-                    <td>{record.totalCommission}</td>
-                    <td>{record.depositDate}</td>
+                  <td>{record.commission}</td>
+                  <td>{record.totalCommission}</td>
+                  <td>{record.depositDate}</td>
                     <td>{record.createdAt}</td>
                     <td>{record.updatedAt}</td>
                     <td className={styles.actionCell}>
@@ -1063,10 +1055,6 @@ const FinanceOfferListPage = () => {
                 onChange={handleFormChange('paymentCondition')}
                 disabled={manualDisabled}
               />
-            </label>
-            <label>
-              <span>비 고</span>
-              <textarea value={formState.note} onChange={handleFormChange('note')} disabled={manualDisabled} />
             </label>
             <label>
               <span>커미션</span>
