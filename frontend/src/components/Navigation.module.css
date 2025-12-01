@@ -24,25 +24,30 @@
 .brandRow {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 12px;
+}
+
+.collapsed .brandRow {
+  justify-content: center;
 }
 
 .toggleButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
   border: none;
-  background-color: rgba(255, 255, 255, 0.12);
+  background-color: transparent;
   color: #e2e8f0;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
 .toggleButton:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(148, 163, 184, 0.18);
 }
 
 .brand {

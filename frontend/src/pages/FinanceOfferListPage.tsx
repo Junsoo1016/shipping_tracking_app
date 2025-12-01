@@ -677,13 +677,13 @@ const FinanceOfferListPage = () => {
           <div className={styles.filterStack}>
             <div className={styles.filterRow}>
               <label className={styles.searchField}>
-                <span>Offer No 조회</span>
+                <span>Offer No / Invoice No 조회</span>
                 <input
                   type="search"
                   value={searchInput}
                   onChange={handleSearchInputChange}
                   onKeyDown={handleSearchKeyDown}
-                  placeholder="Offer No 조회"
+                  placeholder="Offer # 또는 Invoice #"
                 />
               </label>
               <label className={styles.filterSelect}>
