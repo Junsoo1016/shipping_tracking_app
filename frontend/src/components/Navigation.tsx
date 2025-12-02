@@ -30,9 +30,6 @@ const Navigation = ({ collapsed, onToggle, onHoverStart, onHoverEnd }: Navigatio
 
   const items = [
     { to: '/', label: 'Dashboard', icon: FaChartPie, exact: true },
-    { type: 'section', label: 'Monitor' },
-    { to: '/monitor/active', label: 'Active Orders', icon: FaTruckFast },
-    { to: '/monitor/archive', label: 'Archive', icon: FaBoxArchive },
     { type: 'section', label: 'Finance' },
     { to: '/finance/offers', label: 'Offer List', icon: FaMoneyBillWave },
     { type: 'section', label: 'Contacts' },
