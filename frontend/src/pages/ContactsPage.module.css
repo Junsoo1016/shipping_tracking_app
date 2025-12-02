@@ -1,0 +1,209 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pageHeader h2 {
+  margin: 0;
+  font-size: 24px;
+  color: #0f172a;
+}
+
+.pageHeader p {
+  margin: 0;
+  color: #475569;
+  font-size: 14px;
+}
+
+.controlsCard {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  padding: 12px 16px;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.searchGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.searchLabel {
+  font-size: 14px;
+  color: #1f2937;
+}
+
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.searchRow input {
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  min-width: 240px;
+}
+
+.meta {
+  color: #334155;
+  font-weight: 600;
+}
+
+.primaryButton,
+.secondaryButton {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.primaryButton {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+
+.primaryButton:hover {
+  background: #1d4ed8;
+}
+
+.secondaryButton {
+  background: #fff;
+  color: #1f2937;
+  border-color: #cbd5e1;
+}
+
+.secondaryButton:hover {
+  background: #f8fafc;
+}
+
+.tableCard {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  padding: 0 0 12px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+}
+
+.scrollable {
+  overflow: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1000px;
+}
+
+.table th,
+.table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table th {
+  background: #f8fafc;
+  font-weight: 700;
+  color: #334155;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.table tbody tr:hover {
+  background: #f1f5f9;
+}
+
+.table td {
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.actionCell {
+  min-width: 160px;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 6px;
+}
+
+.actionButton {
+  background-color: transparent;
+  border: 1px solid #cbd5e1;
+  color: #2563eb;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.actionButton:hover {
+  background-color: rgba(37, 99, 235, 0.12);
+}
+
+.dangerButton {
+  border-color: rgba(248, 113, 113, 0.6);
+  color: #b91c1c;
+}
+
+.dangerButton:hover {
+  background-color: rgba(248, 113, 113, 0.16);
+}
+
+.form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: #475569;
+}
+
+.form input {
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+}
+
+.modalActions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.error {
+  grid-column: 1 / -1;
+  padding: 10px 12px;
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecdd3;
+  border-radius: 8px;
+}

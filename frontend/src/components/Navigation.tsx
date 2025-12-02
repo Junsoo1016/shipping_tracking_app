@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
+  FaAddressBook,
   FaBars,
   FaBoxArchive,
   FaChartPie,
@@ -33,7 +34,9 @@ const Navigation = ({ collapsed, onToggle, onHoverStart, onHoverEnd }: Navigatio
     { to: '/monitor/active', label: 'Active Orders', icon: FaTruckFast },
     { to: '/monitor/archive', label: 'Archive', icon: FaBoxArchive },
     { type: 'section', label: 'Finance' },
-    { to: '/finance/offers', label: 'Offer List', icon: FaMoneyBillWave }
+    { to: '/finance/offers', label: 'Offer List', icon: FaMoneyBillWave },
+    { type: 'section', label: 'Contacts' },
+    { to: '/contacts', label: '연락처', icon: FaAddressBook }
   ];
 
   if (role === 'admin') {

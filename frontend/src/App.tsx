@@ -5,6 +5,7 @@ import MonitorArchivePage from './pages/MonitorArchivePage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import FinanceOfferListPage from './pages/FinanceOfferListPage';
 import LoginPage from './pages/LoginPage';
+import ContactsPage from './pages/ContactsPage';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
@@ -30,6 +31,7 @@ const App = () => (
               <Route path="monitor/active" element={<MonitorActivePage />} />
               <Route path="monitor/archive" element={<MonitorArchivePage />} />
               <Route path="finance/offers" element={<FinanceOfferListPage />} />
+              <Route path="contacts" element={<ContactsPage />} />
               <Route path="admin/users" element={<AdminUsersPage />} />
             </Route>
           </Routes>

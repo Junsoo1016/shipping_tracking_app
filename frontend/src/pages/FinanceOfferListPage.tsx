@@ -698,7 +698,7 @@ const FinanceOfferListPage = () => {
     <div className={styles.container}>
       <header className={styles.header}>
         <h2>Offer List</h2>
-        <p>Finance view of current offers, associated bookings, and commission tracking.</p>
+        <p>현재 오퍼와 예약, 커미션 현황을 한눈에 확인하세요.</p>
       </header>
 
       {feedback && (
