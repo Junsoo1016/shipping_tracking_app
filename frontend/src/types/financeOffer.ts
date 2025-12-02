@@ -25,6 +25,4 @@ export type FinanceOffer = {
   commission: string;
   totalCommission: string;
   depositDate: string;
-  createdAt: string;
-  updatedAt: string;
 };

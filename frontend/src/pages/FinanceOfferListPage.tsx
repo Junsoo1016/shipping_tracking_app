@@ -7,7 +7,7 @@ import { useFinanceOffers } from '../context/FinanceOffersContext';
 import { FinanceOffer } from '../types/financeOffer';
 import styles from './FinanceOfferListPage.module.css';
 
-type OfferDraft = Omit<FinanceOffer, 'id' | 'ownerUid' | 'createdAt' | 'updatedAt' | 'note'> & {
+type OfferDraft = Omit<FinanceOffer, 'id' | 'ownerUid' | 'note' | 'totalCommission'> & {
   offerMetricTons: string;
 };
 
@@ -36,13 +36,59 @@ const createEmptyOffer = (): OfferDraft => ({
   settlementDate: '',
   paymentCondition: '',
   commission: '',
-  totalCommission: '',
   depositDate: ''
 });
 
 const getTodayDate = () => {
   const today = new Date();
   return today.toISOString().slice(0, 10);
+};
+
+const normalizeCurrency = (value: string) => value.replace(/[$,]/g, '').trim();
+const normalizeNumber = (value: string) => value.replace(/,/g, '').trim();
+
+const computeTotalCommission = (commissionValue: string, metricTonsValue: string) => {
+  const commission = Number.parseFloat(commissionValue);
+  const metricTons = Number.parseFloat(metricTonsValue);
+  if (Number.isNaN(commission) || Number.isNaN(metricTons)) {
+    return '';
+  }
+  return (commission * metricTons).toFixed(2);
+};
+
+const formatCurrencyDisplay = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return '';
+  }
+  return trimmed.startsWith('$') ? trimmed : `$${trimmed}`;
+};
+
+const parseDateToTime = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  if (/^\d{8}$/.test(trimmed)) {
+    const year = trimmed.slice(0, 4);
+    const month = trimmed.slice(4, 6);
+    const day = trimmed.slice(6, 8);
+    const time = new Date(`${year}-${month}-${day}T00:00:00`).getTime();
+    return Number.isNaN(time) ? null : time;
+  }
+
+  const twoDigitYearMatch = trimmed.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{2})$/);
+  if (twoDigitYearMatch) {
+    const [, month, day, shortYear] = twoDigitYearMatch;
+    const fullYear = 2000 + Number(shortYear);
+    const time = new Date(`${fullYear}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T00:00:00`).getTime();
+    return Number.isNaN(time) ? null : time;
+  }
+
+  const normalized = trimmed.replace(/[./]/g, '-');
+  const time = new Date(`${normalized}T00:00:00`).getTime();
+  return Number.isNaN(time) ? null : time;
 };
 
 const isWithinDateRange = (value: string, start: string, end: string) => {
@@ -52,19 +98,19 @@ const isWithinDateRange = (value: string, start: string, end: string) => {
   if (!value) {
     return false;
   }
-  const valueTime = new Date(`${value}T00:00:00`).getTime();
-  if (Number.isNaN(valueTime)) {
+  const valueTime = parseDateToTime(value);
+  if (valueTime === null) {
     return false;
   }
   if (start) {
-    const startTime = new Date(`${start}T00:00:00`).getTime();
-    if (valueTime < startTime) {
+    const startTime = parseDateToTime(start);
+    if (startTime !== null && valueTime < startTime) {
       return false;
     }
   }
   if (end) {
-    const endTime = new Date(`${end}T23:59:59`).getTime();
-    if (valueTime > endTime) {
+    const endTime = parseDateToTime(end);
+    if (endTime !== null && valueTime > endTime) {
       return false;
     }
   }
@@ -77,10 +123,10 @@ const FinanceOfferListPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [companyFilter, setCompanyFilter] = useState<'all' | CompanyOption>('all');
-  const [createdStart, setCreatedStart] = useState('');
-  const [createdEnd, setCreatedEnd] = useState('');
-  const [updatedStart, setUpdatedStart] = useState('');
-  const [updatedEnd, setUpdatedEnd] = useState('');
+  const [offerDateStart, setOfferDateStart] = useState('');
+  const [offerDateEnd, setOfferDateEnd] = useState('');
+  const [depositDateStart, setDepositDateStart] = useState('');
+  const [depositDateEnd, setDepositDateEnd] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalPurpose, setModalPurpose] = useState<'create' | 'edit'>('create');
   const [modalMode, setModalMode] = useState<'manual' | 'upload'>('manual');
@@ -123,10 +169,10 @@ const FinanceOfferListPage = () => {
       if (companyFilter !== 'all' && offer.company !== companyFilter) {
         return false;
       }
-      if (!isWithinDateRange(offer.createdAt, createdStart, createdEnd)) {
+      if (!isWithinDateRange(offer.offerDate, offerDateStart, offerDateEnd)) {
         return false;
       }
-      if (!isWithinDateRange(offer.updatedAt, updatedStart, updatedEnd)) {
+      if (!isWithinDateRange(offer.depositDate, depositDateStart, depositDateEnd)) {
         return false;
       }
       if (!normalizedSearch) {
@@ -154,15 +200,13 @@ const FinanceOfferListPage = () => {
         offer.note ?? '',
         offer.commission,
         offer.totalCommission,
-        offer.depositDate,
-        offer.createdAt,
-        offer.updatedAt
+        offer.depositDate
       ]
         .join(' ')
         .toLowerCase();
       return searchable.includes(normalizedSearch);
     });
-  }, [offers, companyFilter, searchTerm, createdStart, createdEnd, updatedStart, updatedEnd]);
+  }, [offers, companyFilter, searchTerm, offerDateStart, offerDateEnd, depositDateStart, depositDateEnd]);
 
   const paginatedOffers = useMemo(() => {
     if (pageSize === 0) {
@@ -216,10 +260,10 @@ const FinanceOfferListPage = () => {
     setSearchTerm('');
     setSearchInput('');
     setCompanyFilter('all');
-    setCreatedStart('');
-    setCreatedEnd('');
-    setUpdatedStart('');
-    setUpdatedEnd('');
+    setOfferDateStart('');
+    setOfferDateEnd('');
+    setDepositDateStart('');
+    setDepositDateEnd('');
     setSelectedIds(new Set());
     setCurrentPage(1);
   };
@@ -292,20 +336,21 @@ const FinanceOfferListPage = () => {
       etd: formState.etd.trim(),
       eta: formState.eta.trim(),
       bookingNumber: formState.bookingNumber.trim(),
-      metricTons: formState.metricTons.trim(),
-      usdPerMetricTon: formState.usdPerMetricTon.trim(),
+      metricTons: normalizeNumber(formState.metricTons),
+      usdPerMetricTon: normalizeCurrency(formState.usdPerMetricTon),
       amount: formState.amount.trim(),
       settlementDate: formState.settlementDate.trim(),
       paymentCondition: formState.paymentCondition.trim(),
-      commission: formState.commission.trim(),
-      totalCommission: formState.totalCommission.trim(),
+      commission: normalizeCurrency(formState.commission),
       depositDate: formState.depositDate.trim()
     };
+    const totalCommission = computeTotalCommission(trimmed.commission, normalizeNumber(trimmed.metricTons));
 
     try {
       if (modalPurpose === 'edit' && editingOfferId) {
         await updateOffer(editingOfferId, {
           ...trimmed,
+          totalCommission,
           offerMetricTons: trimmed.offerMetricTons || undefined,
           note: undefined
         });
@@ -313,6 +358,7 @@ const FinanceOfferListPage = () => {
       } else {
         await createOffer({
           ...trimmed,
+          totalCommission,
           offerMetricTons: trimmed.offerMetricTons || undefined,
           note: undefined
         });
@@ -356,7 +402,6 @@ const FinanceOfferListPage = () => {
       settlementDate: offer.settlementDate,
       paymentCondition: offer.paymentCondition,
       commission: offer.commission,
-      totalCommission: offer.totalCommission,
       depositDate: offer.depositDate
     });
     setFormError(null);
@@ -435,6 +480,8 @@ const FinanceOfferListPage = () => {
           return acc;
         }
 
+        const depositDateCell = row[19] ?? row[18];
+
         acc.push({
           company: uploadCompany,
           offerNumber,
@@ -450,13 +497,12 @@ const FinanceOfferListPage = () => {
           eta: toCleanString(row[10]),
           bookingNumber: toCleanString(row[11]),
           metricTons: toCleanString(row[12]),
-          usdPerMetricTon: toCleanString(row[13]),
+          usdPerMetricTon: normalizeCurrency(toCleanString(row[13])),
           amount: toCleanString(row[14]),
           settlementDate: toCleanString(row[15]),
           paymentCondition: toCleanString(row[16]),
-          commission: toCleanString(row[17]),
-          totalCommission: toCleanString(row[18]),
-          depositDate: toCleanString(row[19])
+          commission: normalizeCurrency(toCleanString(row[17])),
+          depositDate: toCleanString(depositDateCell)
         });
 
         return acc;
@@ -470,10 +516,17 @@ const FinanceOfferListPage = () => {
       }
 
       await importOffers(
-        parsedOffers.map(item => ({
-          ...item,
-          offerMetricTons: item.offerMetricTons || undefined
-        }))
+        parsedOffers.map(item => {
+          const metricTons = normalizeNumber(item.metricTons);
+          const commission = item.commission;
+          const totalCommission = computeTotalCommission(commission, metricTons);
+          return {
+            ...item,
+            metricTons,
+            offerMetricTons: item.offerMetricTons || undefined,
+            totalCommission
+          };
+        })
       );
       setFeedback({
         type: 'success',
@@ -520,9 +573,7 @@ const FinanceOfferListPage = () => {
       '비 고',
       '커미션',
       '총커미션',
-      '입금일',
-      'Created At',
-      'Updated At'
+      '입금일'
     ];
     const rows = filteredOffers.map(record => [
       record.company,
@@ -546,9 +597,7 @@ const FinanceOfferListPage = () => {
       record.note ?? '',
       record.commission,
       record.totalCommission,
-      record.depositDate,
-      record.createdAt,
-      record.updatedAt
+      record.depositDate
     ]);
 
     const csvContent = [header, ...rows]
@@ -694,28 +743,44 @@ const FinanceOfferListPage = () => {
             </div>
             <div className={styles.filters}>
               <div className={styles.filterGroup}>
-                <span className={styles.filterLabel}>Created Date</span>
+                <span className={styles.filterLabel}>오퍼일</span>
                 <div className={styles.dateRange}>
                   <label>
                     <span>From</span>
-                    <input type="date" value={createdStart} onChange={event => setCreatedStart(event.target.value)} />
+                    <input
+                      type="date"
+                      value={offerDateStart}
+                      onChange={event => setOfferDateStart(event.target.value)}
+                    />
                   </label>
                   <label>
                     <span>To</span>
-                    <input type="date" value={createdEnd} onChange={event => setCreatedEnd(event.target.value)} />
+                    <input
+                      type="date"
+                      value={offerDateEnd}
+                      onChange={event => setOfferDateEnd(event.target.value)}
+                    />
                   </label>
                 </div>
               </div>
               <div className={styles.filterGroup}>
-                <span className={styles.filterLabel}>Updated Date</span>
+                <span className={styles.filterLabel}>입금일</span>
                 <div className={styles.dateRange}>
                   <label>
                     <span>From</span>
-                    <input type="date" value={updatedStart} onChange={event => setUpdatedStart(event.target.value)} />
+                    <input
+                      type="date"
+                      value={depositDateStart}
+                      onChange={event => setDepositDateStart(event.target.value)}
+                    />
                   </label>
                   <label>
                     <span>To</span>
-                    <input type="date" value={updatedEnd} onChange={event => setUpdatedEnd(event.target.value)} />
+                    <input
+                      type="date"
+                      value={depositDateEnd}
+                      onChange={event => setDepositDateEnd(event.target.value)}
+                    />
                   </label>
                 </div>
               </div>
@@ -827,8 +892,6 @@ const FinanceOfferListPage = () => {
                 <th>커미션</th>
                 <th>총커미션</th>
                 <th>입금일</th>
-                <th>Created</th>
-                <th>Updated</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -840,55 +903,58 @@ const FinanceOfferListPage = () => {
                   </td>
                 </tr>
               ) : (
-                paginatedOffers.map(record => (
-                  <tr key={record.id}>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.has(record.id)}
-                        onChange={() => handleToggleRow(record.id)}
-                        aria-label={`Select offer ${record.offerNumber}`}
-                      />
-                    </td>
-                    <td>{record.company}</td>
-                    <td>{record.offerNumber}</td>
-                    <td>{record.salesOrder}</td>
-                    <td>{record.invoiceNumber}</td>
-                    <td>{record.customer}</td>
-                    <td>{record.grade}</td>
-                    <td>{record.pricingTerm}</td>
-                    <td>{record.offerMetricTons ?? ''}</td>
-                    <td>{record.offerDate}</td>
-                    <td>{record.portOfLoading}</td>
-                    <td>{record.etd}</td>
-                    <td>{record.eta}</td>
-                    <td>{record.bookingNumber}</td>
-                    <td>{record.metricTons}</td>
-                    <td>{record.usdPerMetricTon}</td>
-                    <td>{record.amount}</td>
-                    <td>{record.settlementDate || '-'}</td>
-                    <td className={styles.paymentCell}>{record.paymentCondition || '-'}</td>
-                  <td>{record.commission}</td>
-                  <td>{record.totalCommission}</td>
-                  <td>{record.depositDate}</td>
-                    <td>{record.createdAt}</td>
-                    <td>{record.updatedAt}</td>
-                    <td className={styles.actionCell}>
-                      <div className={styles.actionButtons}>
-                        <button type="button" className={styles.actionButton} onClick={() => handleEdit(record.id)}>
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          className={`${styles.actionButton} ${styles.dangerButton}`}
-                          onClick={() => handleDelete(record.id)}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                paginatedOffers.map(record => {
+                  const computedTotalCommission =
+                    record.totalCommission ||
+                    computeTotalCommission(normalizeCurrency(record.commission), normalizeNumber(record.metricTons));
+                  return (
+                    <tr key={record.id}>
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(record.id)}
+                          onChange={() => handleToggleRow(record.id)}
+                          aria-label={`Select offer ${record.offerNumber}`}
+                        />
+                      </td>
+                      <td>{record.company}</td>
+                      <td>{record.offerNumber}</td>
+                      <td>{record.salesOrder}</td>
+                      <td>{record.invoiceNumber}</td>
+                      <td>{record.customer}</td>
+                      <td>{record.grade}</td>
+                      <td>{record.pricingTerm}</td>
+                      <td>{record.offerMetricTons ?? ''}</td>
+                      <td>{record.offerDate}</td>
+                      <td>{record.portOfLoading}</td>
+                      <td>{record.etd}</td>
+                      <td>{record.eta}</td>
+                      <td>{record.bookingNumber}</td>
+                      <td>{record.metricTons}</td>
+                      <td>{formatCurrencyDisplay(record.usdPerMetricTon)}</td>
+                      <td>{record.amount}</td>
+                      <td>{record.settlementDate || '-'}</td>
+                      <td className={styles.paymentCell}>{record.paymentCondition || '-'}</td>
+                      <td>{formatCurrencyDisplay(record.commission)}</td>
+                      <td>{formatCurrencyDisplay(computedTotalCommission)}</td>
+                      <td>{record.depositDate}</td>
+                      <td className={styles.actionCell}>
+                        <div className={styles.actionButtons}>
+                          <button type="button" className={styles.actionButton} onClick={() => handleEdit(record.id)}>
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            className={`${styles.actionButton} ${styles.dangerButton}`}
+                            onClick={() => handleDelete(record.id)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -1059,14 +1125,6 @@ const FinanceOfferListPage = () => {
             <label>
               <span>커미션</span>
               <input value={formState.commission} onChange={handleFormChange('commission')} disabled={manualDisabled} />
-            </label>
-            <label>
-              <span>총커미션</span>
-              <input
-                value={formState.totalCommission}
-                onChange={handleFormChange('totalCommission')}
-                disabled={manualDisabled}
-              />
             </label>
             <label>
               <span>입금일</span>

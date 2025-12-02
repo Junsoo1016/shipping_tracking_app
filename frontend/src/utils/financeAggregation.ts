@@ -53,9 +53,9 @@ export const extractYear = (offer: FinanceOffer, fallbackYear: number): number =
   if (offerDate) {
     return offerDate.getFullYear();
   }
-  const createdAt = normalizeDate(offer.createdAt, fallbackYear);
-  if (createdAt) {
-    return createdAt.getFullYear();
+  const depositDate = normalizeDate(offer.depositDate, fallbackYear);
+  if (depositDate) {
+    return depositDate.getFullYear();
   }
   return fallbackYear;
 };

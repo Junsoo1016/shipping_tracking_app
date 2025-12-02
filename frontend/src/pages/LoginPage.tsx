@@ -72,7 +72,7 @@ const LoginPage = () => {
     <div className={styles.wrapper}>
       <div className={styles.card}>
         <h1>JJ International</h1>
-        <p className={styles.subtitle}>Log in to manage your ocean freight tracking.</p>
+        <p className={styles.subtitle}>Log in to manage finance view of current offers, associated bookings, and commission tracking.</p>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <label>

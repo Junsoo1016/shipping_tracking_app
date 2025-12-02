@@ -18,7 +18,7 @@ import { useAuth } from './AuthContext';
 const collectionName = 'financeOffers';
 const MAX_BATCH_SIZE = 500;
 
-type FinanceOfferInput = Omit<FinanceOffer, 'id' | 'ownerUid' | 'createdAt' | 'updatedAt'>;
+type FinanceOfferInput = Omit<FinanceOffer, 'id' | 'ownerUid'>;
 
 type FinanceOffersContextValue = {
   loading: boolean;
@@ -46,26 +46,13 @@ export const FinanceOffersProvider = ({ children }: { children: React.ReactNode 
 
     setLoading(true);
     const colRef = collection(db, collectionName);
-    const offersQuery = query(colRef, where('ownerUid', '==', user.uid), orderBy('createdAt', 'desc'));
+    const offersQuery = query(colRef, where('ownerUid', '==', user.uid));
 
     const unsubscribe = onSnapshot(
       offersQuery,
       snapshot => {
         const data: FinanceOffer[] = snapshot.docs.map(docSnap => {
           const payload = docSnap.data();
-
-          const toIsoString = (value: unknown) => {
-            if (!value) {
-              return '';
-            }
-            if (typeof value === 'string') {
-              return value;
-            }
-            if (typeof (value as { toDate?: () => Date }).toDate === 'function') {
-              return (value as { toDate: () => Date }).toDate().toISOString();
-            }
-            return '';
-          };
 
           return {
             id: docSnap.id,
@@ -91,12 +78,17 @@ export const FinanceOffersProvider = ({ children }: { children: React.ReactNode 
             note: payload.note ?? '',
             commission: payload.commission ?? '',
             totalCommission: payload.totalCommission ?? '',
-            depositDate: payload.depositDate ?? '',
-            createdAt: toIsoString(payload.createdAt) || new Date().toISOString(),
-            updatedAt: toIsoString(payload.updatedAt) || new Date().toISOString()
+            depositDate: payload.depositDate ?? ''
           };
         });
-        setOffers(data);
+
+        const parseSortDate = (value: string) => {
+          const ts = Date.parse(value || '');
+          return Number.isNaN(ts) ? 0 : ts;
+        };
+        const sorted = data.sort((a, b) => parseSortDate(b.offerDate) - parseSortDate(a.offerDate));
+
+        setOffers(sorted);
         setLoading(false);
       },
       err => {
@@ -118,21 +110,17 @@ export const FinanceOffersProvider = ({ children }: { children: React.ReactNode 
           throw new Error('User must be logged in to create offers');
         }
         const colRef = collection(db, collectionName);
-        const now = new Date().toISOString();
         await addDoc(colRef, {
           ...input,
           offerMetricTons: input.offerMetricTons ?? '',
           note: input.note ?? '',
-          ownerUid: user.uid,
-          createdAt: now,
-          updatedAt: now
+          ownerUid: user.uid
         });
       },
       updateOffer: async (id, data) => {
         const docRef = doc(db, collectionName, id);
         const payload: Record<string, unknown> = {
-          ...data,
-          updatedAt: new Date().toISOString()
+          ...data
         };
         if ('offerMetricTons' in data) {
           payload.offerMetricTons = data.offerMetricTons ?? '';
@@ -169,7 +157,6 @@ export const FinanceOffersProvider = ({ children }: { children: React.ReactNode 
         for (let i = 0; i < inputs.length; i += MAX_BATCH_SIZE) {
           chunks.push(inputs.slice(i, i + MAX_BATCH_SIZE));
         }
-        const now = new Date().toISOString();
         for (const chunk of chunks) {
           const batch = writeBatch(db);
           chunk.forEach(input => {
@@ -178,9 +165,7 @@ export const FinanceOffersProvider = ({ children }: { children: React.ReactNode 
               ...input,
               offerMetricTons: input.offerMetricTons ?? '',
               note: input.note ?? '',
-              ownerUid: user.uid,
-              createdAt: now,
-              updatedAt: now
+              ownerUid: user.uid
             });
           });
           await batch.commit();

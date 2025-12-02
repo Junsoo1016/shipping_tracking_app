@@ -67,12 +67,12 @@ const DashboardPage = () => {
           <div className={styles.metricValue}>${formatNumber(analysis.totalCommission)}</div>
         </div>
         <div className={styles.metricCard}>
-          <h3>평균 월별 출하 금액</h3>
+          <h3>평균 월별 커미션</h3>
           <div className={styles.metricValue}>
             $
             {formatNumber(
-              analysis.totalAmount /
-                (analysis.monthlyAmountSeries.filter((point: MonthlySeriesPoint) => point.value > 0).length || 1)
+              analysis.totalCommission /
+                (analysis.monthlyCommissionSeries.filter((point: MonthlySeriesPoint) => point.value > 0).length || 1)
             )}
           </div>
         </div>
