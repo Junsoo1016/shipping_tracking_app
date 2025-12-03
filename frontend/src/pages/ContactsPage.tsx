@@ -13,20 +13,7 @@ type Contact = {
   businessNumber: string;
 };
 
-const CONTACTS: Contact[] = [
-  { id: 'c1', company: '대왕', manager: '장지선', title: '', phone1: '063-467-3988', phone2: '', fax: '', businessNumber: '' },
-  { id: 'c2', company: '영풍제지', manager: '이혜린', title: '사원', phone1: '031-660-8226', phone2: '010-6358-6062', fax: '', businessNumber: '' },
-  { id: 'c3', company: '신창', manager: '대표번호', title: '', phone1: '041-533-0290', phone2: '', fax: '', businessNumber: '' },
-  { id: 'c4', company: '신창', manager: '김인기', title: '과장', phone1: '070-4147-2069', phone2: '010-3034-0145', fax: '', businessNumber: '312-81-49017' },
-  { id: 'c5', company: '신창', manager: '김철환', title: '주임', phone1: '070-4147-2055', phone2: '010-8885-0159', fax: '', businessNumber: '' },
-  { id: 'c6', company: '주신통상', manager: '이동규', title: '대표', phone1: '010-9488-2445', phone2: '044-862-5599', fax: '', businessNumber: '307-81-12726' },
-  { id: 'c7', company: '주신통상', manager: '이복화', title: '과장', phone1: '044-862-5599', phone2: '010-8568-1860', fax: '044-863-0566', businessNumber: '' },
-  { id: 'c8', company: '천일', manager: '이수경', title: '과장', phone1: '02-2278-8211', phone2: '', fax: '', businessNumber: '' },
-  { id: 'c9', company: '페이퍼코리아', manager: '김학선', title: '대리', phone1: '02-3788-0347', phone2: '', fax: '', businessNumber: '' },
-  { id: 'c10', company: '풍융', manager: '연몽영', title: '과장', phone1: '010-4469-2365', phone2: '', fax: '', businessNumber: '' },
-  { id: 'c11', company: '프린스페이퍼', manager: '', title: '', phone1: '041-331-4950', phone2: '', fax: '', businessNumber: '311-81-41711' },
-  { id: 'c12', company: '한국제지', manager: '한은희', title: '주임', phone1: '02-3475-7376', phone2: '', fax: '', businessNumber: '320-85-02189' }
-];
+const CONTACTS: Contact[] = [];
 
 const ContactsPage = () => {
   const [contacts, setContacts] = useState<Contact[]>(CONTACTS);
@@ -132,9 +119,11 @@ const ContactsPage = () => {
               <div className={styles.meta}>{filtered.length}명</div>
             </div>
           </div>
-          <button type="button" className={styles.primaryButton} onClick={handleOpenModal}>
-            연락처 등록
-          </button>
+          <div className={styles.actionRow}>
+            <button type="button" className={styles.primaryButton} onClick={handleOpenModal}>
+              연락처 등록
+            </button>
+          </div>
         </div>
       </section>
 

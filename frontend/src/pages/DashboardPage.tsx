@@ -4,6 +4,7 @@ import Spinner from '../components/Spinner';
 import { useFinanceOffers } from '../context/FinanceOffersContext';
 import { FINANCE_COMPANY_OPTIONS } from '../constants/finance';
 import { buildCompanyMonthlyMatrix, getAvailableYears, MonthlySeriesPoint } from '../utils/financeAggregation';
+import { parseNumeric } from '../utils/number';
 import { formatNumber } from '../utils/number';
 import styles from './DashboardPage.module.css';
 
@@ -24,6 +25,56 @@ const DashboardPage = () => {
   }, [yearOptions, selectedYear]);
 
   const analysis = useMemo(() => buildCompanyMonthlyMatrix(offers, selectedYear), [offers, selectedYear]);
+
+  const yearlyTotals = useMemo(() => {
+    const totals = new Map<
+      number,
+      {
+        amount: number;
+        commission: number;
+        metricTons: number;
+      }
+    >();
+
+    const parseYear = (raw: string) => {
+      if (!raw) {
+        return null;
+      }
+      const trimmed = raw.trim();
+      const ymd = trimmed.match(/^(\d{4})[./-](\d{1,2})[./-](\d{1,2})$/);
+      if (ymd) {
+        return Number(ymd[1]);
+      }
+      const mdyShort = trimmed.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{2})$/);
+      if (mdyShort) {
+        return 2000 + Number(mdyShort[3]);
+      }
+      const ts = Date.parse(trimmed);
+      if (!Number.isNaN(ts)) {
+        return new Date(ts).getFullYear();
+      }
+      return null;
+    };
+
+    offers.forEach(offer => {
+      const year =
+        parseYear(offer.settlementDate) ??
+        parseYear(offer.offerDate) ??
+        parseYear(offer.depositDate) ??
+        new Date().getFullYear();
+      const current = totals.get(year) ?? { amount: 0, commission: 0, metricTons: 0 };
+      totals.set(year, {
+        amount: current.amount + parseNumeric(offer.amount),
+        commission: current.commission + parseNumeric(offer.totalCommission),
+        metricTons: current.metricTons + parseNumeric(offer.metricTons)
+      });
+    });
+    return totals;
+  }, [offers]);
+
+  const previousYear = selectedYear - 1;
+  const selectedYearTotals = yearlyTotals.get(selectedYear) ?? { amount: 0, commission: 0, metricTons: 0 };
+  const previousYearTotals = yearlyTotals.get(previousYear) ?? { amount: 0, commission: 0, metricTons: 0 };
 
   if (loading) {
     return <Spinner />;
@@ -93,7 +144,67 @@ const DashboardPage = () => {
         </div>
       </section>
 
-
+      <section className={styles.comparisonCard}>
+        <div className={styles.sectionHeader}>
+          <h3>연도별 비교</h3>
+          <span className={styles.subdued}>
+            {previousYear} ↔ {selectedYear} 기준
+          </span>
+        </div>
+        <div className={styles.scrollableTable}>
+          <table className={styles.comparisonTable}>
+            <thead>
+              <tr>
+                <th>지표</th>
+                <th>{previousYear}</th>
+                <th>{selectedYear}</th>
+                <th>증감</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                {
+                  label: '출하 금액 (US$)',
+                  current: selectedYearTotals.amount,
+                  prev: previousYearTotals.amount,
+                  isCurrency: true
+                },
+                {
+                  label: '커미션 (US$)',
+                  current: selectedYearTotals.commission,
+                  prev: previousYearTotals.commission,
+                  isCurrency: true
+                },
+                {
+                  label: '출하 중량 (S.MT)',
+                  current: selectedYearTotals.metricTons,
+                  prev: previousYearTotals.metricTons,
+                  isCurrency: false
+                }
+              ].map(row => {
+                const delta = row.current - row.prev;
+                const formattedCurrent = row.isCurrency ? `$${formatNumber(row.current)}` : formatNumber(row.current);
+                const formattedPrev = row.isCurrency ? `$${formatNumber(row.prev)}` : formatNumber(row.prev);
+                const formattedDelta = row.isCurrency ? `$${formatNumber(Math.abs(delta))}` : formatNumber(Math.abs(delta));
+                const deltaClass =
+                  delta === 0 ? styles.deltaNeutral : delta > 0 ? styles.deltaPositive : styles.deltaNegative;
+                return (
+                  <tr key={row.label}>
+                    <td>{row.label}</td>
+                    <td>{formattedPrev}</td>
+                    <td>{formattedCurrent}</td>
+                    <td>
+                      <span className={`${styles.deltaChip} ${deltaClass}`}>
+                        {delta === 0 ? '변동 없음' : delta > 0 ? `▲ ${formattedDelta}` : `▼ ${formattedDelta}`}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       <section className={styles.charts}>
         <div className={styles.chartCard}>

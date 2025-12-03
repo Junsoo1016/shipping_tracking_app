@@ -53,6 +53,13 @@
   gap: 10px;
 }
 
+.actionRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .searchRow input {
   padding: 10px 12px;
   border: 1px solid #cbd5e1;
