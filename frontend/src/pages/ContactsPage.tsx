@@ -1,28 +1,16 @@
 import { FormEvent, useMemo, useState } from 'react';
 import Modal from '../components/Modal';
+import Spinner from '../components/Spinner';
+import { useContacts } from '../context/ContactsContext';
 import styles from './ContactsPage.module.css';
 
-type Contact = {
-  id: string;
-  company: string;
-  manager: string;
-  title: string;
-  phone1: string;
-  phone2: string;
-  fax: string;
-  businessNumber: string;
-};
-
-const CONTACTS: Contact[] = [];
-
 const ContactsPage = () => {
-  const [contacts, setContacts] = useState<Contact[]>(CONTACTS);
+  const { contacts, loading, createContact, updateContact, deleteContact } = useContacts();
   const [query, setQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formState, setFormState] = useState<Contact>({
-    id: '',
+  const [formState, setFormState] = useState({
     company: '',
     manager: '',
     title: '',
@@ -50,7 +38,6 @@ const ContactsPage = () => {
     setModalMode('create');
     setEditingId(null);
     setFormState({
-      id: '',
       company: '',
       manager: '',
       title: '',
@@ -63,10 +50,22 @@ const ContactsPage = () => {
     setIsModalOpen(true);
   };
 
-  const handleOpenEdit = (contact: Contact) => {
+  const handleOpenEdit = (contactId: string) => {
+    const contact = contacts.find(item => item.id === contactId);
+    if (!contact) {
+      return;
+    }
     setModalMode('edit');
     setEditingId(contact.id);
-    setFormState({ ...contact });
+    setFormState({
+      company: contact.company,
+      manager: contact.manager,
+      title: contact.title,
+      phone1: contact.phone1,
+      phone2: contact.phone2,
+      fax: contact.fax,
+      businessNumber: contact.businessNumber
+    });
     setFormError(null);
     setIsModalOpen(true);
   };
@@ -76,28 +75,36 @@ const ContactsPage = () => {
     setFormError(null);
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!formState.company.trim() || !formState.manager.trim()) {
       setFormError('업체명과 담당자를 입력해주세요.');
       return;
     }
-    if (modalMode === 'edit' && editingId) {
-      setContacts(prev => prev.map(item => (item.id === editingId ? { ...formState, id: editingId } : item)));
-    } else {
-      const id = `contact-${Date.now()}`;
-      setContacts(prev => [...prev, { ...formState, id }]);
+    try {
+      if (modalMode === 'edit' && editingId) {
+        await updateContact(editingId, { ...formState });
+      } else {
+        await createContact({ ...formState });
+      }
+      handleCloseModal();
+    } catch (error) {
+      console.error(error);
+      setFormError('저장에 실패했습니다. 다시 시도해주세요.');
     }
-    handleCloseModal();
   };
 
   const handleFormChange =
-    <Key extends keyof Contact>(key: Key) =>
+    <Key extends keyof typeof formState>(key: Key) =>
     (value: string) => {
       setFormState(prev => ({ ...prev, [key]: value }));
     };
 
   const renderValue = (value: string) => (value ? value : '-');
+
+  if (loading) {
+    return <Spinner />;
+  }
 
   return (
     <div className={styles.container}>
@@ -154,18 +161,18 @@ const ContactsPage = () => {
                   <td>{renderValue(item.businessNumber)}</td>
                   <td className={styles.actionCell}>
                     <div className={styles.actionButtons}>
-                      <button type="button" className={styles.actionButton} onClick={() => handleOpenEdit(item)}>
+                      <button type="button" className={styles.actionButton} onClick={() => handleOpenEdit(item.id)}>
                         Edit
                       </button>
                       <button
                         type="button"
                         className={`${styles.actionButton} ${styles.dangerButton}`}
-                        onClick={() => {
+                        onClick={async () => {
                           const confirmDelete = window.confirm('삭제하시겠습니까?');
                           if (!confirmDelete) {
                             return;
                           }
-                          setContacts(prev => prev.filter(contact => contact.id !== item.id));
+                          await deleteContact(item.id);
                         }}
                       >
                         Delete
